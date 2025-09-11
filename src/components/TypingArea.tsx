@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import clsx from "clsx";
+import { RotateCcw } from "lucide-react";
 
 interface TypingAreaProps {
     text: string[];
@@ -9,12 +10,15 @@ interface TypingAreaProps {
     isActive: boolean;
     setIsRunning: (running: boolean) => void;
     isFinished?: boolean;
+    duration: number;
 }
 
-export default function TypingArea({ text, onComplete, isActive, setIsRunning, isFinished }: TypingAreaProps) {
+export default function TypingArea({ text, onComplete, isActive, setIsRunning, isFinished, duration }: TypingAreaProps) {
     const [currentText, setCurrentText] = useState("");
     const [error, setError] = useState(0);
     const targetText = text.join(" ");
+    const inputRef = useRef<HTMLInputElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (isFinished) {
@@ -30,7 +34,7 @@ export default function TypingArea({ text, onComplete, isActive, setIsRunning, i
                 });
             }
 
-            const minutes = 15 / 60;
+            const minutes = duration / 60;
             const wpm = currentText.length > 0 ? Math.round((currentText.length / 5) / minutes) : 0;
             const accuracy = currentText.length > 0 ? Math.round(((currentText.length - currentErrors) / currentText.length) * 100) : 0;
 
@@ -38,6 +42,19 @@ export default function TypingArea({ text, onComplete, isActive, setIsRunning, i
             onComplete({ wpm, accuracy, errors: currentErrors });
         }
     }, [isFinished, currentText, targetText, onComplete]);
+
+    const handleContainerClick = () => {
+        if (inputRef.current && !isFinished) {
+            inputRef.current.focus();
+        }
+    };
+
+    // autofocusing the input when component mounts
+    useEffect(() => {
+        if (inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if(!isActive) {
@@ -56,7 +73,7 @@ export default function TypingArea({ text, onComplete, isActive, setIsRunning, i
         setError(currentErrors);
 
         if(value.length >= targetText.length) {
-            const minutes = 15 / 60;
+            const minutes = duration / 60;
             const wpm = Math.round((value.length / 5) / minutes);
             const accuracy = Math.round(((value.length - currentErrors) / value.length) * 100);
 
@@ -65,14 +82,28 @@ export default function TypingArea({ text, onComplete, isActive, setIsRunning, i
     };
 
     return (
-        <div className="border p-4 m-4 rounded shadow flex flex-col gap-4 w-full max-w-2xl">
-            <div className="flex flex-wrap text-xl leading-relaxed font-mono">
+        <div 
+            ref={containerRef}
+            onClick={handleContainerClick}
+            className="flex flex-col items-center justify-center h-[calc(95vh-120px)] w-full cursor-default"
+        >
+            <input 
+                ref={inputRef}
+                type="text"
+                value={currentText}
+                onChange={handleChange}
+                className="absolute opacity-0 pointer-events-none"
+                autoFocus
+                disabled={isFinished}
+            />
+
+            <div className="flex flex-wrap text-xl leading-relaxed max-w-5xl mx-auto justify-center">
                 {targetText.split("").map((char, index) => (
                     <span
                         key={index}
                         className={clsx(
-                            "inline-block",
-                            char === " " && "w-2",
+                            "inline-block text-3xl font-mono relative",
+                            char === "  " && "w-3",
                             index < currentText.length
                             ? currentText[index] === char
                                 ? "text-green-500 bg-green-100"
@@ -80,30 +111,25 @@ export default function TypingArea({ text, onComplete, isActive, setIsRunning, i
                             : "text-gray-400"
                         )}
                     >
-                        {char === " " ? "\u00A0" : char} {/* non-breaking space */}
+                        {char === " " ? "\u00A0" : char}
+                        {index === currentText.length && !isFinished && (
+                            <span className="absolute right-1 top-0 text-blue-500 animate-pulse font-bold">|</span>
+                        )}
                     </span>
                 ))}
             </div>
 
-            <input 
-                type="text"
-                value={currentText}
-                onChange={handleChange}
-                className="mt-2 w-full p-2 border rounded font-mono"
-                placeholder="Start typing..."
-                autoFocus
-                disabled={isFinished}
-            />
-
             <button 
-                onClick={() => {
+                onClick={(e) => {
+                    e.stopPropagation(); // prevents triggering container click
                     setCurrentText("");
                     setError(0);
                     setIsRunning(false);
-                    onComplete({ wpm: 0, accuracy: 100, errors: 0 });
+                    onComplete({ wpm: 0, accuracy: 0, errors: 0 });
                 }}
-                className="mt-4 p-2 bg-blue-500 text-white rounded">
-                    Restart
+                className="mt-8 p-3 bg-emerald-200 hover:bg-emerald-300 cursor-pointer text-black rounded-full transition-colors duration-200 flex items-center justify-center"
+            >
+                <RotateCcw size={20} />
             </button>
         </div>
     );
