@@ -1,47 +1,42 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import clsx from "clsx";
 import { RotateCcw } from "lucide-react";
+import type { TypingData } from "@/types/typing";
+import { useTypingTest } from "@/hooks/useTypingTest";
 
 interface TypingAreaProps {
     text: string[];
-    onComplete: (stats: { wpm: number; accuracy: number; errors: number }) => void;
+    onComplete: (stats: { wpm: number; accuracy: number; errors: number; typingData: TypingData[] }) => void;
     isActive: boolean;
     setIsRunning: (running: boolean) => void;
     isFinished?: boolean;
     duration: number;
+    onTextUpdate?: (newText: string[]) => void;
 }
 
-export default function TypingArea({ text, onComplete, isActive, setIsRunning, isFinished, duration }: TypingAreaProps) {
-    const [currentText, setCurrentText] = useState("");
-    const [error, setError] = useState(0);
-    const targetText = text.join(" ");
+export default function TypingArea({ 
+    text, 
+    onComplete, 
+    isActive, 
+    setIsRunning, 
+    isFinished, 
+    duration, 
+    onTextUpdate 
+}: TypingAreaProps) {
+    const { currentText, targetText, handleChange, handleRestart } = useTypingTest({
+        text,
+        isActive,
+        isFinished,
+        duration,
+        setIsRunning,
+        onTextUpdate,
+        onComplete
+    });
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        if (isFinished) {
-            // console.log("Current text:", currentText);
-            // console.log("Target text:", targetText);
-            
-            let currentErrors = 0;
-            if (currentText.length > 0) {
-                currentText.split("").forEach((char, index) => {
-                    if (char !== targetText[index]) {
-                        currentErrors++;
-                    }
-                });
-            }
-
-            const minutes = duration / 60;
-            const wpm = currentText.length > 0 ? Math.round((currentText.length / 5) / minutes) : 0;
-            const accuracy = currentText.length > 0 ? Math.round(((currentText.length - currentErrors) / currentText.length) * 100) : 0;
-
-            // console.log("Calculated stats:", { wpm, accuracy, errors: currentErrors });
-            onComplete({ wpm, accuracy, errors: currentErrors });
-        }
-    }, [isFinished, currentText, targetText, onComplete]);
+    
 
     const handleContainerClick = () => {
         if (inputRef.current && !isFinished) {
@@ -55,32 +50,7 @@ export default function TypingArea({ text, onComplete, isActive, setIsRunning, i
             inputRef.current.focus();
         }
     }, []);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if(!isActive) {
-            setIsRunning(true);
-        }
-
-        const value = e.target.value;
-        setCurrentText(value);
-
-        let currentErrors = 0;
-        value.split("").forEach((char, index) => {
-            if(char !== targetText[index]) {
-                currentErrors++;
-            }
-        });
-        setError(currentErrors);
-
-        if(value.length >= targetText.length) {
-            const minutes = duration / 60;
-            const wpm = Math.round((value.length / 5) / minutes);
-            const accuracy = Math.round(((value.length - currentErrors) / value.length) * 100);
-
-            onComplete({ wpm, accuracy, errors: currentErrors });
-        }
-    };
-
+    
     return (
         <div 
             ref={containerRef}
@@ -113,20 +83,14 @@ export default function TypingArea({ text, onComplete, isActive, setIsRunning, i
                     >
                         {char === " " ? "\u00A0" : char}
                         {index === currentText.length && !isFinished && (
-                            <span className="absolute right-1 top-0 text-blue-500 animate-pulse font-bold">|</span>
+                            <span className="absolute right-1.5 top-0 text-blue-500 animate-pulse font-bold">|</span>
                         )}
                     </span>
                 ))}
             </div>
 
             <button 
-                onClick={(e) => {
-                    e.stopPropagation(); // prevents triggering container click
-                    setCurrentText("");
-                    setError(0);
-                    setIsRunning(false);
-                    onComplete({ wpm: 0, accuracy: 0, errors: 0 });
-                }}
+                onClick={handleRestart}
                 className="mt-8 p-3 bg-emerald-200 hover:bg-emerald-300 cursor-pointer text-black rounded-full transition-colors duration-200 flex items-center justify-center"
             >
                 <RotateCcw size={20} />

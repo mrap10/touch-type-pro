@@ -1,0 +1,20 @@
+export interface TypingData {
+    second: number;
+    wpm: number;
+    errors: number;
+}
+
+export interface UseTypingTestParams {
+    text: string[];
+    isActive: boolean;
+    isFinished?: boolean;
+    duration: number;
+    setIsRunning: (running: boolean) => void;
+    onTextUpdate?: (newText: string[]) => void;
+    onComplete: (stats: {
+        wpm: number;
+        accuracy: number;
+        errors: number;
+        typingData: TypingData[];
+    }) => void;
+}

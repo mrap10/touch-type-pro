@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TypingArea from "./TypingArea";
 import ResultsCard from "./ResultsCard";
 import Timer from "./Timer";
@@ -8,15 +8,20 @@ import { generateRandomText } from "@/lib/TextGenerator";
 import { Time } from "./Timer";
 
 export default function TestClientWrapper() {
-    const [text, setText] = useState<string[]>(generateRandomText());
+    const [text, setText] = useState<string[]>([]); // Start empty
     const [isRunning, setIsRunning] = useState(false);
     const [isFinished, setIsFinished] = useState(false);
     const [duration, setDuration] = useState<Time>(15);
     const [results, setResults] = useState<null | {
         wpm: number; 
         accuracy: number; 
-        errors: number
+        errors: number;
+        typingData: Array<{ second: number; wpm: number; errors: number; }>;
      }>(null);
+
+    useEffect(() => {
+        setText(generateRandomText(50));
+    }, []);
 
     const handleTimeUp = () => {
         setIsFinished(true);
@@ -28,7 +33,7 @@ export default function TestClientWrapper() {
             setDuration(newDuration);
             setIsFinished(false);
             setResults(null);
-            setText(generateRandomText());
+            setText(generateRandomText(50));
         }
     };
 
@@ -36,6 +41,7 @@ export default function TestClientWrapper() {
         wpm: number;
         accuracy: number;
         errors: number;
+        typingData: Array<{ second: number; wpm: number; errors: number; }>;
     }) => {
         setResults(calculatedStats);
         setIsFinished(true);
@@ -43,15 +49,19 @@ export default function TestClientWrapper() {
     };
 
     const handleRestart = () => {
-        setText(generateRandomText());
+        setText(generateRandomText(50));
         setIsRunning(false);
         setIsFinished(false);
         setResults(null);
     };
 
+    const handleTextUpdate = (newText: string[]) => {
+        setText(newText);
+    };
+
     return (
         <div className="max-h-screen flex flex-col">
-            {!results && (
+            {!results && text.length > 0 && (
                 <>
                     <div className="flex-shrink-0">
                         <Timer
@@ -69,9 +79,16 @@ export default function TestClientWrapper() {
                             setIsRunning={setIsRunning}
                             isFinished={isFinished}
                             duration={duration}
+                            onTextUpdate={handleTextUpdate}
                         />
                     </div>
                 </>
+            )}
+
+            {!results && text.length === 0 && (
+                <div className="flex-1 flex items-center justify-center">
+                    <div className="text-xl text-gray-500">Loading words...</div>
+                </div>
             )}
 
             {results && (
@@ -80,6 +97,8 @@ export default function TestClientWrapper() {
                         wpm={results.wpm}
                         accuracy={results.accuracy}
                         errors={results.errors}
+                        typingData={results.typingData}
+                        duration={duration}
                         onRestart={handleRestart}
                     />
                 </div>

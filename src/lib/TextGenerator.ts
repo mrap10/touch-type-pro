@@ -7,7 +7,7 @@ const WORDS = [
     "stay", "positive", "and", "work", "hard", "to", "achieve", "goals"
 ]
 
-export function generateRandomText(wordCount: number = 30): string[] {
+export function generateRandomText(wordCount: number = 50): string[] {
     const words: string[] = [];
     for(let i = 0; i < wordCount; i++) {
         const randomWord = WORDS[Math.floor(Math.random() * WORDS.length)];
@@ -15,4 +15,13 @@ export function generateRandomText(wordCount: number = 30): string[] {
     }
 
     return words;
+}
+
+export function generateMoreWords(currentWords: string[], additionalCount: number = 50): string[] {
+    const newWords: string[] = [];
+    for(let i = 0; i < additionalCount; i++) {
+        const randomWord = WORDS[Math.floor(Math.random() * WORDS.length)];
+        newWords.push(randomWord);
+    }
+    return [...currentWords, ...newWords];
 }
