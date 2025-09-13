@@ -1,6 +1,6 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, Share2 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { getChunkInterval } from "@/constants/typing";
 import type { TypingData } from "@/types/typing";
@@ -12,9 +12,10 @@ interface ResultsCardProps {
     typingData: TypingData[];
     duration: number;
     onRestart: () => void;
+    onShare: () => void;
 }
 
-export default function ResultsCard({ wpm, accuracy, errors, typingData, duration, onRestart }: ResultsCardProps) {
+export default function ResultsCard({ wpm, accuracy, errors, typingData, duration, onRestart, onShare }: ResultsCardProps) {
     const chartData = typingData.length > 0 ? typingData : (() => {
         const chunkInterval = getChunkInterval(duration);
         const dataPoints = [];
@@ -123,12 +124,22 @@ export default function ResultsCard({ wpm, accuracy, errors, typingData, duratio
                     </LineChart>
                 </ResponsiveContainer>
             </div>
-            <button 
-                onClick={onRestart}
-                className="mt-8 p-3 bg-emerald-200 hover:bg-emerald-300 cursor-pointer text-black rounded-full transition-colors duration-200 flex items-center justify-center"
-            >
-                <RotateCcw size={20} />
-            </button>
+
+            <div className="flex space-x-4">
+                <button 
+                    onClick={onRestart}
+                    className="mt-8 p-3 bg-emerald-200 hover:bg-emerald-300 cursor-pointer text-black rounded-full transition-colors duration-200 flex items-center justify-center"
+                >
+                    <RotateCcw size={20} />
+                </button>
+
+                <button
+                    onClick={onShare}
+                    className="mt-8 p-3 bg-emerald-200 hover:bg-emerald-300 cursor-pointer text-black rounded-full transition-colors duration-200 flex items-center justify-center"
+                >
+                    <Share2 size={20} />
+                </button>
+            </div>
         </div>
     );
 }

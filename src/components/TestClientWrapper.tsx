@@ -6,11 +6,13 @@ import ResultsCard from "./ResultsCard";
 import Timer from "./Timer";
 import { generateRandomText } from "@/lib/TextGenerator";
 import { Time } from "./Timer";
+import ShareCard from "./ShareCard";
 
 export default function TestClientWrapper() {
     const [text, setText] = useState<string[]>([]); // Start empty
     const [isRunning, setIsRunning] = useState(false);
     const [isFinished, setIsFinished] = useState(false);
+    const [isShareOpen, setIsShareOpen] = useState(false);
     const [duration, setDuration] = useState<Time>(15);
     const [results, setResults] = useState<null | {
         wpm: number; 
@@ -54,6 +56,10 @@ export default function TestClientWrapper() {
         setIsFinished(false);
         setResults(null);
     };
+
+    const handleShare = () => {
+        setIsShareOpen(true);
+    }
 
     const handleTextUpdate = (newText: string[]) => {
         setText(newText);
@@ -100,9 +106,21 @@ export default function TestClientWrapper() {
                         typingData={results.typingData}
                         duration={duration}
                         onRestart={handleRestart}
+                        onShare={handleShare}
                     />
                 </div>
             )}
+
+            {isShareOpen && 
+                <ShareCard 
+                    isOpen={isShareOpen}
+                    onClose={() => setIsShareOpen(false)}
+                    wpm={results ? results.wpm : 0}
+                    accuracy={results ? results.accuracy : 0}
+                    errors={results ? results.errors : 0}
+                    time={duration}
+                />
+            }
         </div>
     );
 }

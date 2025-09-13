@@ -121,8 +121,8 @@ export function useTypingTest({ text, isActive, isFinished, duration, setIsRunni
 
             if (!shouldRecord) return;
 
-            const curr = currentTextRef.current;
-            const target = targetTextRef.current;
+            // const curr = currentTextRef.current;
+            // const target = targetTextRef.current;
             const baseCorrect = totalCorrectRef.current;
             const baseIncorrect = totalIncorrectRef.current;
 

@@ -33,10 +33,10 @@ export default function Timer({ duration, onTimeUp, isRunning, onDurationChange 
         return () => clearInterval(interval);
     }, [isRunning, timeLeft, onTimeUp]);
 
-    const handleTimeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newTime = parseInt(e.target.value) as Time;
-        onDurationChange(newTime);
-    };
+    // const handleTimeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    //     const newTime = parseInt(e.target.value) as Time;
+    //     onDurationChange(newTime);
+    // };
 
     return (
         <div className="text-lg flex justify-around items-center w-full px-4 mt-10 font-bold">

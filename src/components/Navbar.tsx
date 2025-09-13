@@ -34,8 +34,11 @@ export default function Navbar() {
                 <Link href={"/"} className="mr-4 hover:underline">
                     Home
                 </Link>
-                <Link href={"/test"} className="hover:underline">
+                <Link href={"/test"} className="mr-4 hover:underline">
                     Test
+                </Link>
+                <Link href={"/race"} className="hover:underline">
+                    Race
                 </Link>
             </div>
 
