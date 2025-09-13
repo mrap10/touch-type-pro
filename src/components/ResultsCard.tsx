@@ -50,21 +50,21 @@ export default function ResultsCard({ wpm, accuracy, errors, typingData, duratio
         <div className="flex flex-col items-center justify-center p-6 w-full ">
             <div className="m-6 p-6 grid grid-cols-4 gap-4 w-full text-center">
                 <div>
-                    <h1 className="text-4xl text-gray-500">{wpm}</h1>
-                    <p className="text-3xl text-gray-800">wpm</p>
+                    <h1 className="text-4xl text-gray-500 dark:text-gray-300">{wpm}</h1>
+                    <p className="text-3xl text-gray-800 dark:text-gray-500">wpm</p>
                 </div>
 
                 <div>
-                    <h1 className="text-4xl text-gray-500">{accuracy}%</h1>
-                    <p className="text-3xl text-gray-800">accuracy</p>
+                    <h1 className="text-4xl text-gray-500 dark:text-gray-300">{accuracy}%</h1>
+                    <p className="text-3xl text-gray-800 dark:text-gray-500">accuracy</p>
                 </div>
                 <div>
-                    <h1 className="text-4xl text-gray-500">{errors}</h1>
-                    <p className="text-3xl text-gray-800">error strokes</p>
+                    <h1 className="text-4xl text-gray-500 dark:text-gray-300">{errors}</h1>
+                    <p className="text-3xl text-gray-800 dark:text-gray-500">error strokes</p>
                 </div>
                 <div>
-                    <h1 className="text-4xl text-gray-500">{duration}s</h1>
-                    <p className="text-3xl text-gray-800">time</p>
+                    <h1 className="text-4xl text-gray-500 dark:text-gray-300">{duration}s</h1>
+                    <p className="text-3xl text-gray-800 dark:text-gray-500">time</p>
                 </div>
             </div>
             <div className="w-full h-64 p-5">
@@ -76,11 +76,11 @@ export default function ResultsCard({ wpm, accuracy, errors, typingData, duratio
                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                         <XAxis 
                             dataKey="second" 
-                            label={{ value: "Time (seconds)", position: "insideBottomRight", offset: -10 }}
+                            label={{ value: "Time (seconds)", position: "insideBottomRight", offset: -10, dx: -20 }}
                             stroke="#6b7280"
                         />
                         <YAxis 
-                            label={{ value: "WPM / Errors", angle: -90, position: "insideLeft" }}
+                            label={{ value: "WPM / Errors", angle: -90, position: "insideLeft", offset: 18, dy: 40 }}
                             stroke="#6b7280"
                             domain={[0, Math.max(100, Math.max(...finalChartData.map(d => d.wpm)) + 10)]}
                         />
@@ -92,6 +92,15 @@ export default function ResultsCard({ wpm, accuracy, errors, typingData, duratio
                                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                             }}
                         />
+                        {/* <Tooltip 
+                            contentStyle={{ 
+                                backgroundColor: 'rgb(31 41 55)', 
+                                border: '1px solid #374151',
+                                borderRadius: '8px',
+                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                color: '#f9fafb'
+                            }}
+                        /> */}
                         <Legend />
                         <Line 
                             type="monotone" 

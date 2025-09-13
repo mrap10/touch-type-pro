@@ -6,7 +6,7 @@ export default function Test() {
     return (
         <div className="">
             <Navbar />
-            <div className="flex-1">
+            <div className="flex-1 dark:text-gray-300">
                 <TestClientWrapper />
             </div>
         </div>

@@ -76,9 +76,9 @@ export default function TypingArea({
                             char === "  " && "w-3",
                             index < currentText.length
                             ? currentText[index] === char
-                                ? "text-green-500 bg-green-100"
-                                : "text-red-500 bg-red-100"
-                            : "text-gray-400"
+                                ? "text-green-500 bg-green-100 dark:bg-green-900"
+                                : "text-red-500 bg-red-100 dark:bg-red-900"
+                            : "text-gray-400 dark:text-gray-600",
                         )}
                     >
                         {char === " " ? "\u00A0" : char}
