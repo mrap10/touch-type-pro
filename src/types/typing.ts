@@ -17,4 +17,5 @@ export interface UseTypingTestParams {
         errors: number;
         typingData: TypingData[];
     }) => void;
+    onProgress?: (progress: number, wpm: number, accuracy: number) => void;
 }

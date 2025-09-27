@@ -4,7 +4,7 @@ import { DISPLAY_WORD_COUNT, getChunkInterval } from "@/constants/typing";
 import type { TypingData, UseTypingTestParams } from "@/types/typing";
 import { useCharacterCount } from "@/hooks/useCharacterCount";
 
-export function useTypingTest({ text, isActive, isFinished, duration, setIsRunning, onTextUpdate, onComplete }: UseTypingTestParams) {
+export function useTypingTest({ text, isActive, isFinished, duration, setIsRunning, onTextUpdate, onComplete, onProgress }: UseTypingTestParams) {
     const [currentText, setCurrentText] = useState("");
     const [typingData, setTypingData] = useState<TypingData[]>([]);
     const [startTime, setStartTime] = useState<number | null>(null);
@@ -218,6 +218,17 @@ export function useTypingTest({ text, isActive, isFinished, duration, setIsRunni
             if (newCharIndex < targetText.length && value[newCharIndex] !== targetText[newCharIndex]) {
                 setTotalIncorrectKeystrokes((prev) => prev + 1);
             }
+        }
+
+        if (onProgress && startTime) {
+            const progress = Math.min((value.length / targetText.length) * 100, 100);
+            const timeElapsed = (Date.now() - startTime) / 1000 / 60;
+            const currentCorrect = currentMatchCorrect + totalCorrectCharacters;
+            const currentWpm = timeElapsed > 0 && currentCorrect > 0 ? Math.round(currentCorrect / 5 / timeElapsed) : 0;
+            const totalTyped = value.length + totalCharactersTyped;
+            const currentAccuracy = totalTyped > 0 ? Math.round(((currentCorrect) / totalTyped) * 100) : 100;
+            
+            onProgress(progress, currentWpm, currentAccuracy);
         }
     };
 

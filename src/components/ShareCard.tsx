@@ -28,6 +28,12 @@ export default function ShareCard({ isOpen, onClose, wpm, accuracy, errors, time
         }
     };
 
+    const handleTwitterShare = () => {
+        const tweetText = `🔥 I just typed at ${wpm} WPM with ${accuracy}% accuracy in ${time}s! Test your speed at: https://touchtypepro.vercel.app`;
+        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+        window.open(twitterUrl, "_blank");
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -81,7 +87,10 @@ export default function ShareCard({ isOpen, onClose, wpm, accuracy, errors, time
                     </div>
 
                     <div className="mt-6 flex justify-between space-x-4">
-                        <button className="flex items-center gap-x-2 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg transition-colors cursor-pointer">
+                        <button
+                            onClick={handleTwitterShare}
+                            className="flex items-center gap-x-2 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg transition-colors cursor-pointer"
+                        >
                             <Image width={16} height={16} src={Xlogo.src} alt="X logo" className="rounded-md" />
                             Share on Twitter
                         </button>

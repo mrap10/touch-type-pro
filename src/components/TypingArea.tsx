@@ -14,6 +14,7 @@ interface TypingAreaProps {
     isFinished?: boolean;
     duration: number;
     onTextUpdate?: (newText: string[]) => void;
+    onProgress?: (progress: number, wpm: number, accuracy: number) => void;
 }
 
 export default function TypingArea({ 
@@ -23,7 +24,8 @@ export default function TypingArea({
     setIsRunning, 
     isFinished, 
     duration, 
-    onTextUpdate 
+    onTextUpdate,
+    onProgress,
 }: TypingAreaProps) {
     const { currentText, targetText, handleChange, handleRestart } = useTypingTest({
         text,
@@ -32,7 +34,8 @@ export default function TypingArea({
         duration,
         setIsRunning,
         onTextUpdate,
-        onComplete
+        onComplete,
+        onProgress,
     });
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
