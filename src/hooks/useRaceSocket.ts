@@ -2,8 +2,8 @@ import { useEffect, useRef, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 import { RaceProgressData, UserEventData, RaceCompletedData, RaceSocketCallbacks } from "@/types/race";
 
-const PROGRESS_THROTTLE_MS = 300;
-const MIN_PROGRESS_DIFF = 1;
+const PROGRESS_THROTTLE_MS = 250;
+const MIN_PROGRESS_DIFF = 0.1;
 
 export default function useRaceSocket(
     roomId: string, 
@@ -25,6 +25,7 @@ export default function useRaceSocket(
             const socket = socketRef.current;
 
             socket.on("progress_broadcast", (data: RaceProgressData) => {
+                // console.log("Received progress broadcast:", data);
                 onProgressUpdate?.(data);
             });
 
@@ -54,7 +55,7 @@ export default function useRaceSocket(
                 clearTimeout(progressThrottleRef.current);
             }
         };
-    }, [onProgressUpdate, onUserJoined, onUserLeft, onRaceCompleted]);
+    }, [onProgressUpdate, onUserJoined, onUserLeft, onRaceCompleted, onRaceStarted, onRoomJoined]);
 
     useEffect(() => {
         if (!roomId || !socketRef.current) return;
@@ -76,24 +77,49 @@ export default function useRaceSocket(
     }, [roomId]);
 
     const sendProgress = useCallback((progress: number) => {
-        if (!socketRef.current || !roomIdRef.current) return;
-
-        const progressDiff = Math.abs(progress - lastProgressSent.current);
-        if (progressDiff < MIN_PROGRESS_DIFF) return;
-
-        if (progressThrottleRef.current) {
-            clearTimeout(progressThrottleRef.current);
+        if (!socketRef.current || !roomIdRef.current) {
+            console.log("Cannot send progress: socket or room not available", {
+                hasSocket: !!socketRef.current,
+                roomId: roomIdRef.current
+            });
+            return;
         }
 
-        progressThrottleRef.current = setTimeout(() => {
-            if (socketRef.current && roomIdRef.current) {
-                socketRef.current.emit("progress_update", { 
-                    roomId: roomIdRef.current, 
-                    progress 
+        const now = Date.now();
+        const last = (sendProgress as unknown as { _lastSentAt?: number })._lastSentAt;
+        const progressDiff = Math.abs(progress - lastProgressSent.current);
+
+        const isCompletion = progress >= 100;
+
+        if (!isCompletion && progressDiff < MIN_PROGRESS_DIFF) return;
+
+        const shouldSendImmediately = !last || now - last >= PROGRESS_THROTTLE_MS || isCompletion;
+
+        if (shouldSendImmediately) {
+            console.log("Throttle-send progress update (immediate):", { roomId: roomIdRef.current, progress });
+            socketRef.current.emit("progress_update", {
+                roomId: roomIdRef.current,
+                progress
+            });
+            lastProgressSent.current = progress;
+            (sendProgress as unknown as { _lastSentAt: number })._lastSentAt = now;
+            if (progressThrottleRef.current) {
+                clearTimeout(progressThrottleRef.current);
+            }
+        } else {
+            // scheduling trailing send (ensures opponent sees near-latest value)
+            if (progressThrottleRef.current) clearTimeout(progressThrottleRef.current);
+            progressThrottleRef.current = setTimeout(() => {
+                if (!socketRef.current || !roomIdRef.current) return;
+                console.log("Throttle-send progress update (trailing):", { roomId: roomIdRef.current, progress });
+                socketRef.current.emit("progress_update", {
+                    roomId: roomIdRef.current,
+                    progress
                 });
                 lastProgressSent.current = progress;
-            }
-        }, PROGRESS_THROTTLE_MS);
+                (sendProgress as unknown as { _lastSentAt: number })._lastSentAt = Date.now();
+            }, PROGRESS_THROTTLE_MS - (now - last));
+        }
     }, []);
 
     const startRace = useCallback(() => {

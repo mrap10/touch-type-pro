@@ -42,12 +42,14 @@ interface StatCardProps {
 }
 
 function StatCard({ value, unit, label, color }: StatCardProps) {
+    const displayValue = Math.max(0, value || 0);
+    
     return (
         <div className="flex flex-col items-center">
-            <div className={`text-5xl font-bold ${color}`}>
-                {value}{unit}
+            <div className={`text-4xl md:text-5xl font-bold ${color} transition-all duration-200`}>
+                {displayValue}{unit}
             </div>
-            <div className="text-gray-600 dark:text-gray-400">
+            <div className="text-gray-600 dark:text-gray-400 text-sm">
                 {label}
             </div>
         </div>

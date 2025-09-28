@@ -50,6 +50,7 @@ export default function useRaceState() {
     }, []);
 
     const updateProgress = useCallback((progressPercent: number, currentWpm: number, currentAccuracy: number) => {
+        // console.log("Updating own race stats:", { progressPercent, currentWpm, currentAccuracy });
         setProgress(progressPercent);
         setWpm(currentWpm);
         setAccuracy(currentAccuracy);
@@ -62,8 +63,10 @@ export default function useRaceState() {
     }, []);
 
     const updateOpponentProgress = useCallback((data: { playerId: string; progress: number }) => {
+        // console.log("Updating opponent progress:", data);
         setOpponents(prev => {
             const newOpponents = new Map(prev);
+            // console.log("Current opponents before update:", Array.from(prev.entries()));
             if (newOpponents.has(data.playerId)) {
                 newOpponents.set(data.playerId, {
                     ...newOpponents.get(data.playerId)!,
@@ -75,6 +78,7 @@ export default function useRaceState() {
                     progress: data.progress
                 });
             }
+            // console.log("Updated opponents:", Array.from(newOpponents.entries()));
             return newOpponents;
         });
     }, []);

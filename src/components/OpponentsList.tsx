@@ -2,32 +2,44 @@
 
 import { Users } from "lucide-react";
 import { Opponent } from "@/types/race";
+import React, { useMemo } from "react";
 
 interface OpponentsListProps {
     opponents: Map<string, Opponent>;
 }
 
 export default function OpponentsList({ opponents }: OpponentsListProps) {
-    const opponentArray = Array.from(opponents.values());
+    const { opponentArray, version } = useMemo(() => {
+        const arr = Array.from(opponents.entries()).map(([id, opp]) => ({
+            playerId: id,
+            progress: opp.progress ?? 0,
+            wpm: opp.wpm,
+            accuracy: opp.accuracy,
+        }));
+        const v = arr.map(o => `${o.playerId}:${o.progress.toFixed(2)}`).join("|");
+        return { opponentArray: arr, version: v };
+    }, [opponents]);
 
     if (opponentArray.length === 0) {
         return null;
     }
 
     return (
-        <div className="flex mb-6 bg-white dark:bg-gray-800 rounded-lg p-4">
-            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 w-full">
+        <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg p-4">
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                 <Users size={20} />
                 Opponents ({opponentArray.length})
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 w-full">
-                {opponentArray.map((opponent, index) => (
-                    <OpponentCard 
-                        key={opponent.playerId} 
-                        opponent={opponent} 
-                        index={index} 
-                    />
-                ))}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" data-version={version}>
+                {opponentArray.map((opponent, index) => {
+                    return (
+                        <OpponentCard
+                            key={opponent.playerId + ':' + opponent.progress}
+                            opponent={opponent}
+                            index={index}
+                        />
+                    );
+                })}
             </div>
         </div>
     );
@@ -38,23 +50,27 @@ interface OpponentCardProps {
     index: number;
 }
 
-function OpponentCard({ opponent, index }: OpponentCardProps) {
+const OpponentCard = React.memo(function OpponentCard({ opponent, index }: OpponentCardProps) {
+    const raw = opponent.progress ?? 0;
+    const progress = Math.max(0, Math.min(raw, 100));
+    const display = progress < 10 && progress > 0 ? progress.toFixed(1) : Math.round(progress).toString();
+    
     return (
         <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <div className="flex items-center justify-between gap-2 mb-1">
-                <p className="text-gray-500 dark:text-gray-400">
+                <p className="text-gray-500 dark:text-gray-400 text-sm">
                     Player {index + 1}
                 </p>
-                <p className="text-2xl font-bold text-orange-500">
-                    {Math.round(opponent.progress)}%
+                <p className="text-xl font-bold text-orange-500 tabular-nums">
+                    {display}%
                 </p>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1.5 mt-2">
                 <div
-                    className="bg-orange-500 h-1.5 rounded-full transition-all duration-500"
-                    style={{ width: `${Math.min(opponent.progress, 100)}%` }}
+                    className="bg-orange-500 h-1.5 rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${progress}%` }}
                 />
             </div>
         </div>
     );
-}
+});

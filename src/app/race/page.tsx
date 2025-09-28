@@ -37,7 +37,9 @@ export default function RacePage() {
     const { sendProgress, startRace: socketStartRace, finishRace, disconnect, isConnected } = useRaceSocket(
         currentRoomId,
         {
-            onProgressUpdate: updateOpponentProgress,
+            onProgressUpdate: (data) => {
+                updateOpponentProgress(data);
+            },
             onUserJoined: addUser,
             onUserLeft: removeUser,
             onRaceCompleted: (data) => {
@@ -99,13 +101,26 @@ export default function RacePage() {
 
                 <OpponentsList opponents={opponents} />
 
-                <RaceStats 
-                    progress={progress} 
-                    wpm={wpm} 
-                    accuracy={accuracy} 
-                />
+                {!isRaceStarted && (
+                    <div className="flex flex-col items-center justify-center text-center mt-10">
+                        <p className="text-gray-600 dark:text-gray-400">
+                            Waiting for players to join...
+                        </p>
+                        <h1 className="text-2xl md:text-3xl font-semibold text-gray-700 dark:text-gray-300 mt-20">
+                            Typing Area will appear here once race is started!
+                        </h1>
+                    </div>
+                )}
 
-                {raceText.length > 0 && (
+                {isRaceStarted && (
+                    <RaceStats 
+                        progress={progress} 
+                        wpm={wpm} 
+                        accuracy={accuracy} 
+                    />
+                )}
+
+                {raceText.length > 0 && isRaceStarted && (
                     <TypingArea
                         text={raceText}
                         onComplete={handleRaceComplete}

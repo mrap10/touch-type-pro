@@ -89,7 +89,7 @@ export function useTypingTest({ text, isActive, isFinished, duration, setIsRunni
             setWordPool(newWords);
             onTextUpdate?.(newWords);
         }
-    }, [currentText, targetText, wordPool, wordOffset, isActive, isFinished, onTextUpdate]);
+    }, [currentText, targetText, wordPool, wordOffset, isActive, isFinished, onTextUpdate, currentMatchCorrect]);
 
     // to track typing performance at stable intervals
     useEffect(() => {
@@ -201,10 +201,10 @@ export function useTypingTest({ text, isActive, isFinished, duration, setIsRunni
         }
 
         onComplete({ wpm, accuracy, errors, typingData: finalTypingData });
-    }, [isFinished]);
+    }, [isFinished, currentMatchCorrect, currentMatchIncorrect, currentText.length, duration, onComplete, startTime, totalCharactersTyped, totalCorrectCharacters, totalIncorrectKeystrokes, typingData]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!isActive && !startTime) {
+        if (isActive && !startTime) {
             setStartTime(Date.now());
             setIsRunning(true);
         }
