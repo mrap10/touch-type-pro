@@ -45,7 +45,7 @@ export default function useRaceSocket(
                 onRoomJoined?.(data);
             });
 
-            socket.on("race_started", (data: { message: string; text: string[] }) => {
+            socket.on("race_started", (data: { message: string; text: string[]; startTime: number }) => {
                 onRaceStarted?.(data);
             });
         }
@@ -128,13 +128,15 @@ export default function useRaceSocket(
         socketRef.current.emit("start_race", roomIdRef.current);
     }, []);
 
-    const finishRace = useCallback((wpm: number, accuracy: number) => {
+    const finishRace = useCallback((wpm: number, accuracy: number, errors: number, finishTime: number) => {
         if (!socketRef.current || !roomIdRef.current) return;
         
         socketRef.current.emit("race_finished", { 
             roomId: roomIdRef.current, 
             wpm, 
-            accuracy 
+            accuracy,
+            errors,
+            finishTime
         });
     }, []);
 
@@ -168,6 +170,7 @@ export default function useRaceSocket(
         finishRace, 
         leaveRace,
         disconnect,
-        isConnected: !!socketRef.current?.connected 
+        isConnected: !!socketRef.current?.connected,
+        socketId: socketRef.current?.id
     };
 }

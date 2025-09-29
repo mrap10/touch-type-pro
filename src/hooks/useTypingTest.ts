@@ -16,6 +16,11 @@ export function useTypingTest({ text, isActive, isFinished, duration, setIsRunni
     const [totalCharactersTyped, setTotalCharactersTyped] = useState(0);
     const [totalCorrectCharacters, setTotalCorrectCharacters] = useState(0);
     const [totalIncorrectKeystrokes, setTotalIncorrectKeystrokes] = useState(0);
+    const [wordsCompleted, setWordsCompleted] = useState(0);
+    const DEFAULT_RACE_TARGET = 40;
+    const RACE_WORD_TARGET = Math.max(DEFAULT_RACE_TARGET, text.length); // if server sends larger text, use that
+    const disableSlidingWindow = RACE_WORD_TARGET <= DISPLAY_WORD_COUNT;
+    const hasCompletedRef = useRef(false);
 
     const targetText = useMemo(
         () => displayWords.join(" "),
@@ -49,11 +54,12 @@ export function useTypingTest({ text, isActive, isFinished, duration, setIsRunni
         setWordPool(text);
         setDisplayWords(text.slice(0, DISPLAY_WORD_COUNT));
         setWordOffset(0);
+        setWordsCompleted(0);
     }, [text]);
 
-    // sliding window logic
+    // sliding window logic (disabled for short races)
     useEffect(() => {
-        if (!isActive || isFinished) return;
+        if (!isActive || isFinished || disableSlidingWindow) return;
 
         const typedChars = currentText.length;
         const targetChars = targetText.length;
@@ -70,6 +76,7 @@ export function useTypingTest({ text, isActive, isFinished, duration, setIsRunni
             const correctInCurrentText = currentMatchCorrect;
             setTotalCharactersTyped((prev) => prev + currentText.length);
             setTotalCorrectCharacters((prev) => prev + correctInCurrentText);
+            setWordsCompleted((prev) => prev + wordsTyped);
 
             if (wordPool.length < newOffset + DISPLAY_WORD_COUNT) {
                 const newWords = generateMoreWords(wordPool, 50);
@@ -221,7 +228,19 @@ export function useTypingTest({ text, isActive, isFinished, duration, setIsRunni
         }
 
         if (onProgress && startTime) {
-            const progress = Math.min((value.length / targetText.length) * 100, 100);
+            // words completed: cumulative completed + current window words
+            const currentWindowWords = currentText.trim().length > 0
+                ? currentText.trim().split(/\s+/).filter(w => w.length > 0).length
+                : 0;
+            const totalWordsTyped = wordsCompleted + currentWindowWords;
+
+            let progress = (totalWordsTyped / RACE_WORD_TARGET) * 100;
+            if (totalWordsTyped < 3) {
+                const avgCharsPerWord = 5;
+                const charsTyped = currentText.length + totalCharactersTyped;
+                progress = Math.max(progress, (charsTyped / (RACE_WORD_TARGET * avgCharsPerWord)) * 100);
+            }
+            progress = Math.min(progress, 100);
             const timeElapsed = (Date.now() - startTime) / 1000 / 60;
             const currentCorrect = currentMatchCorrect + totalCorrectCharacters;
             const currentWpm = timeElapsed > 0 && currentCorrect > 0 ? Math.round(currentCorrect / 5 / timeElapsed) : 0;
@@ -229,6 +248,15 @@ export function useTypingTest({ text, isActive, isFinished, duration, setIsRunni
             const currentAccuracy = totalTyped > 0 ? Math.round(((currentCorrect) / totalTyped) * 100) : 100;
             
             onProgress(progress, currentWpm, currentAccuracy);
+            if (progress >= 100 && !hasCompletedRef.current) {
+                hasCompletedRef.current = true;
+                // trigger completion sequence
+                const minutes = timeElapsed;
+                const finalCorrect = currentCorrect;
+                const wpm = minutes > 0 && finalCorrect > 0 ? Math.round(finalCorrect / 5 / minutes) : 0;
+                const accuracy = totalTyped > 0 ? Math.round((finalCorrect / totalTyped) * 100) : 0;
+                onComplete({ wpm, accuracy, errors: totalIncorrectKeystrokes, typingData });
+            }
         }
     };
 
@@ -242,6 +270,8 @@ export function useTypingTest({ text, isActive, isFinished, duration, setIsRunni
         setTotalCharactersTyped(0);
         setTotalCorrectCharacters(0);
         setTotalIncorrectKeystrokes(0);
+        setWordsCompleted(0);
+        hasCompletedRef.current = false;
         onComplete({ wpm: 0, accuracy: 0, errors: 0, typingData: [] });
     };
 

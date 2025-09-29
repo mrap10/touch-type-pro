@@ -20,6 +20,7 @@ const roomData = new Map<string, {
     text: string[];
     users: Set<string>;
     isStarted: boolean;
+    startTime?: number;
 }>();
 
 function generateRaceText(): string[] {
@@ -103,11 +104,24 @@ export default function handler(req: NextApiRequest, res: NextApiResponseWithSoc
             });
         });
 
-        socket.on("race_finished", ({ roomId, wpm, accuracy }: { roomId: string; wpm: number; accuracy: number }) => {
+        socket.on("race_finished", ({ roomId, wpm, accuracy, errors, finishTime }: { 
+            roomId: string; 
+            wpm: number; 
+            accuracy: number; 
+            errors: number; 
+            finishTime: number; // still accepted for backward compat, but recomputed if possible
+        }) => {
+            const room = roomData.get(roomId);
+            let authoritativeFinishTime = finishTime;
+            if (room?.startTime) {
+                authoritativeFinishTime = Date.now() - room.startTime;
+            }
             socket.to(roomId).emit("race_completed", {
                 playerId: socket.id,
                 wpm,
-                accuracy
+                accuracy,
+                errors,
+                finishTime: authoritativeFinishTime
             });
         });
 
@@ -115,9 +129,11 @@ export default function handler(req: NextApiRequest, res: NextApiResponseWithSoc
             const room = roomData.get(roomId);
             if (room) {
                 room.isStarted = true;
+                room.startTime = Date.now();
                 io.to(roomId).emit("race_started", {
                     message: "Race has started!",
-                    text: room.text
+                    text: room.text,
+                    startTime: room.startTime
                 });
             }
         });

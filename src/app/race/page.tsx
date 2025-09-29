@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import RaceControls from "@/components/RaceControls";
 import RaceHeader from "@/components/RaceHeader";
@@ -8,6 +9,7 @@ import RaceStats from "@/components/RaceStats";
 import TypingArea from "@/components/TypingArea";
 import useRaceSocket from "@/hooks/useRaceSocket";
 import useRaceState from "@/hooks/useRaceState";
+import RaceResults from "@/components/RaceResults";
 
 export default function RacePage() {
     const raceState = useRaceState();
@@ -21,6 +23,9 @@ export default function RacePage() {
         wpm,
         accuracy,
         isRaceFinished,
+        raceResults,
+        currentPlayerResult,
+        raceStartTime,
         playerCount,
         createRoom,
         joinRoom,
@@ -31,10 +36,13 @@ export default function RacePage() {
         addUser,
         removeUser,
         handleRoomJoined,
-        handleRaceStarted
+        handleRaceStarted,
+        handlePlayerFinished,
+        setCurrentPlayerId,
+        currentPlayerId
     } = raceState;
 
-    const { sendProgress, startRace: socketStartRace, finishRace, disconnect, isConnected } = useRaceSocket(
+    const { sendProgress, startRace: socketStartRace, finishRace, disconnect, isConnected, socketId } = useRaceSocket(
         currentRoomId,
         {
             onProgressUpdate: (data) => {
@@ -42,13 +50,17 @@ export default function RacePage() {
             },
             onUserJoined: addUser,
             onUserLeft: removeUser,
-            onRaceCompleted: (data) => {
-                console.log("Race completed by:", data);
-            },
+            onRaceCompleted: handlePlayerFinished,
             onRoomJoined: handleRoomJoined,
             onRaceStarted: handleRaceStarted
         }
     );
+
+    useEffect(() => {
+        if (socketId && socketId !== currentPlayerId) {
+            setCurrentPlayerId(socketId);
+        }
+    }, [socketId, currentPlayerId, setCurrentPlayerId]);
 
     const handleStartRace = () => {
         socketStartRace();
@@ -65,8 +77,9 @@ export default function RacePage() {
         errors: number; 
         typingData: Array<{ second: number; wpm: number; errors: number; }> 
     }) => {
+        const raceFinishTime = Date.now() - (raceStartTime || Date.now());
         completeRace(stats);
-        finishRace(stats.wpm, stats.accuracy);
+        finishRace(stats.wpm, stats.accuracy, stats.errors, raceFinishTime);
     };
 
     const handleProgress = (progressPercent: number, currentWpm: number, currentAccuracy: number) => {
@@ -95,6 +108,7 @@ export default function RacePage() {
                     roomId={currentRoomId}
                     playerCount={playerCount}
                     isRaceStarted={isRaceStarted}
+                    isRaceFinished={isRaceFinished}
                     onStartRace={handleStartRace}
                     onLeaveRoom={handleLeaveRoom}
                 />
@@ -112,7 +126,7 @@ export default function RacePage() {
                     </div>
                 )}
 
-                {isRaceStarted && (
+                {isRaceStarted && !isRaceFinished && (
                     <RaceStats 
                         progress={progress} 
                         wpm={wpm} 
@@ -120,7 +134,7 @@ export default function RacePage() {
                     />
                 )}
 
-                {raceText.length > 0 && isRaceStarted && (
+                {raceText.length > 0 && isRaceStarted && !isRaceFinished && (
                     <TypingArea
                         text={raceText}
                         onComplete={handleRaceComplete}
@@ -130,6 +144,22 @@ export default function RacePage() {
                         duration={30} // should be made configurable
                         onTextUpdate={() => {}}
                         onProgress={handleProgress}
+                    />
+                )}
+
+                {isRaceFinished && (
+                    <RaceResults
+                        isFinished={isRaceFinished}
+                        raceResults={raceResults}
+                        currentPlayerResult={currentPlayerResult}
+                        onRematch={() => {
+                            resetRaceState();
+                            createRoom();
+                        }}
+                        onShare={() => {
+                            // TODO: Implement share functionality
+                            console.log('Share results clicked');
+                        }}
                     />
                 )}
             </div>

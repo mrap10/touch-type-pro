@@ -1,5 +1,9 @@
 import { useState, useCallback } from "react";
-import { Opponent, RaceStats } from "@/types/race";
+import { Opponent, RaceStats, RaceCompletedData } from "@/types/race";
+
+export interface PlayerResult extends RaceCompletedData {
+    position: number;
+}
 
 export default function useRaceState() {
     const [roomId, setRoomId] = useState<string>("");
@@ -11,9 +15,13 @@ export default function useRaceState() {
     const [connectedUsers, setConnectedUsers] = useState<Set<string>>(new Set());
     const [serverUserCount, setServerUserCount] = useState<number>(1);
     const [isRaceStarted, setIsRaceStarted] = useState(false);
+    const [raceStartTime, setRaceStartTime] = useState<number>(0); // server authoritative when available
     const [wpm, setWpm] = useState(0);
     const [accuracy, setAccuracy] = useState(100);
     const [isRaceFinished, setIsRaceFinished] = useState(false);
+    const [raceResults, setRaceResults] = useState<Map<string, PlayerResult>>(new Map());
+    const [currentPlayerResult, setCurrentPlayerResult] = useState<PlayerResult | null>(null);
+    const [currentPlayerId, setCurrentPlayerId] = useState<string>("");
 
     const generateRoomId = useCallback(() => {
         return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -32,8 +40,12 @@ export default function useRaceState() {
     }, []);
 
     const startRace = useCallback(() => {
+        // fallback manual start
         setIsRaceStarted(true);
-    }, []);
+        if (!raceStartTime) {
+            setRaceStartTime(Date.now());
+        }
+    }, [raceStartTime]);
 
     const resetRaceState = useCallback(() => {
         setIsInRace(false);
@@ -41,12 +53,16 @@ export default function useRaceState() {
         setRoomId("");
         setIsRaceStarted(false);
         setIsRaceFinished(false);
+        setRaceStartTime(0);
         setProgress(0);
         setOpponents(new Map());
         setConnectedUsers(new Set());
         setServerUserCount(1);
         setWpm(0);
         setAccuracy(100);
+        setRaceResults(new Map());
+        setCurrentPlayerResult(null);
+        setCurrentPlayerId("");
     }, []);
 
     const updateProgress = useCallback((progressPercent: number, currentWpm: number, currentAccuracy: number) => {
@@ -56,11 +72,39 @@ export default function useRaceState() {
         setAccuracy(currentAccuracy);
     }, []);
 
+    const recomputePositions = useCallback((results: Map<string, PlayerResult>) => {
+        const arr = Array.from(results.values());
+        arr.sort((a, b) => {
+            if (b.wpm !== a.wpm) return b.wpm - a.wpm;
+            return a.finishTime - b.finishTime;
+        });
+        arr.forEach((r, idx) => {
+            results.set(r.playerId, { ...r, position: idx + 1 });
+        });
+    }, []);
+
     const completeRace = useCallback((stats: RaceStats) => {
         setIsRaceFinished(true);
         setWpm(stats.wpm);
         setAccuracy(stats.accuracy);
-    }, []);
+        const baseStart = raceStartTime || Date.now();
+        const finishTime = Date.now() - baseStart;
+        const currentResult: PlayerResult = {
+            playerId: currentPlayerId,
+            wpm: stats.wpm,
+            accuracy: stats.accuracy,
+            errors: stats.errors,
+            finishTime,
+            position: 0
+        };
+        setCurrentPlayerResult(currentResult);
+        setRaceResults(prev => {
+            const newResults = new Map(prev);
+            newResults.set(currentPlayerId, currentResult);
+            recomputePositions(newResults);
+            return newResults;
+        });
+    }, [raceStartTime, currentPlayerId, recomputePositions]);
 
     const updateOpponentProgress = useCallback((data: { playerId: string; progress: number }) => {
         // console.log("Updating opponent progress:", data);
@@ -145,10 +189,21 @@ export default function useRaceState() {
         }
     }, []);
 
-    const handleRaceStarted = useCallback((data: { message: string; text: string[] }) => {
+    const handleRaceStarted = useCallback((data: { message: string; text: string[]; startTime: number }) => {
         setRaceText(data.text);
         setIsRaceStarted(true);
+        setRaceStartTime(data.startTime);
     }, []);
+
+    const handlePlayerFinished = useCallback((data: RaceCompletedData) => {
+        setRaceResults(prev => {
+            const newResults = new Map(prev);
+            const playerResult: PlayerResult = { ...data, position: 0 };
+            newResults.set(data.playerId, playerResult);
+            recomputePositions(newResults);
+            return newResults;
+        });
+    }, [recomputePositions]);
 
     return {
         roomId,
@@ -162,6 +217,9 @@ export default function useRaceState() {
         wpm,
         accuracy,
         isRaceFinished,
+        raceResults,
+        currentPlayerResult,
+        raceStartTime,
         
         createRoom,
         joinRoom,
@@ -175,7 +233,10 @@ export default function useRaceState() {
         setRaceText,
         handleRoomJoined,
         handleRaceStarted,
+        handlePlayerFinished,
+        setCurrentPlayerId,
         
         playerCount: serverUserCount,
+        currentPlayerId,
     };
 }

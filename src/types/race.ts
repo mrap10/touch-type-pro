@@ -30,6 +30,8 @@ export interface RaceCompletedData {
     playerId: string;
     wpm: number;
     accuracy: number;
+    errors: number;
+    finishTime: number;
 }
 
 export interface RaceSocketCallbacks {
@@ -38,5 +40,5 @@ export interface RaceSocketCallbacks {
     onUserLeft?: (data: UserEventData & { userCount: number }) => void;
     onRaceCompleted?: (data: RaceCompletedData) => void;
     onRoomJoined?: (data: { roomId: string; text: string[]; userCount: number; isStarted: boolean; existingUsers?: string[] }) => void;
-    onRaceStarted?: (data: { message: string; text: string[] }) => void;
+    onRaceStarted?: (data: { message: string; text: string[]; startTime: number }) => void;
 }

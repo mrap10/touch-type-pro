@@ -1,6 +1,39 @@
-# TODO
+# Touch Type Pro
 
-- Remove duplicate socket logic: currently there are both socket.ts utilities and a custom hook creating its own io()—choose one pattern to avoid two connections.
-- Add TypeScript event typing (define an enum or union of event names).
-- Add a heartbeat / presence mechanism to prune stale users if a disconnect edge case occurs without proper leave.
-- Consider server-side progress caching per room so late joiners can see current opponent progress (currently only new joins get user list, not their current progress)
+A web application designed to help users improve their typing speed and accuracy through interactive lessons and real-time feedback.
+
+## Features
+
+## Technologies Used
+
+- Next.js
+- TypeScript
+- Socket.io
+
+## Getting Started
+
+To get started with Touch Type Pro, clone the repository and install the dependencies:
+
+```bash
+git clone https://github.com/yourusername/touch-type-pro.git
+cd touch-type-pro
+npm install
+```
+
+## Usage
+
+To start the development server, run:
+
+```bash
+npm run dev
+```
+
+Then open your browser and navigate to `http://localhost:3000`.
+
+## Contributing
+
+If you'd like to contribute to Touch Type Pro, please fork the repository and submit a pull request. Contributions to make it better are welcome!
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

@@ -6,6 +6,7 @@ interface RaceHeaderProps {
     roomId: string;
     playerCount: number;
     isRaceStarted: boolean;
+    isRaceFinished: boolean;
     onStartRace: () => void;
     onLeaveRoom: () => void;
 }
@@ -14,6 +15,7 @@ export default function RaceHeader({
     roomId, 
     playerCount, 
     isRaceStarted, 
+    isRaceFinished,
     onStartRace, 
     onLeaveRoom 
 }: RaceHeaderProps) {
@@ -36,6 +38,11 @@ export default function RaceHeader({
                         <Play size={20} />
                         Start Race
                     </button>
+                ) : isRaceFinished ? (
+                    <div className="flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400">
+                        <Users size={20} />
+                        Race Completed
+                    </div>
                 ) : (
                     <div className="flex items-center justify-center gap-2 text-emerald-600 dark:text-emerald-400">
                         <Timer size={20} />
