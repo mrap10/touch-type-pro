@@ -9,6 +9,7 @@ export default function useRaceState() {
     const [roomId, setRoomId] = useState<string>("");
     const [currentRoomId, setCurrentRoomId] = useState<string>("");
     const [isInRace, setIsInRace] = useState(false);
+    const [isCreatingRoom, setIsCreatingRoom] = useState(false);
     const [raceText, setRaceText] = useState<string[]>([]);
     const [progress, setProgress] = useState(0);
     const [opponents, setOpponents] = useState<Map<string, Opponent>>(new Map());
@@ -31,11 +32,13 @@ export default function useRaceState() {
         const newRoomId = generateRoomId();
         setRoomId(newRoomId);
         setCurrentRoomId(newRoomId);
+        setIsCreatingRoom(true);
         setIsInRace(true);
     }, [generateRoomId]);
 
     const joinRoom = useCallback((roomId: string) => {
         setCurrentRoomId(roomId);
+        setIsCreatingRoom(false);
         setIsInRace(true);
     }, []);
 
@@ -51,6 +54,7 @@ export default function useRaceState() {
         setIsInRace(false);
         setCurrentRoomId("");
         setRoomId("");
+        setIsCreatingRoom(false);
         setIsRaceStarted(false);
         setIsRaceFinished(false);
         setRaceStartTime(0);
@@ -220,6 +224,7 @@ export default function useRaceState() {
         roomId,
         currentRoomId,
         isInRace,
+        isCreatingRoom,
         raceText,
         progress,
         opponents,

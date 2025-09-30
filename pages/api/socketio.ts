@@ -63,9 +63,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponseWithSoc
     io.on("connection", (socket) => {
         console.log("New client connected:", socket.id);
 
-        socket.on("join_race", (roomId: string) => {
+        socket.on("create_race", (roomId: string) => {
+            // console.log(`User ${socket.id} creating room: ${roomId}`);
             socket.join(roomId);
-            console.log(`User ${socket.id} joined room: ${roomId}`);
 
             if (!roomData.has(roomId)) {
                 roomData.set(roomId, {
@@ -76,6 +76,40 @@ export default function handler(req: NextApiRequest, res: NextApiResponseWithSoc
             }
 
             const room = roomData.get(roomId)!;
+            
+            const existingUsers = Array.from(room.users);
+            room.users.add(socket.id);
+
+            socket.emit("room_joined", {
+                roomId,
+                text: room.text,
+                userCount: room.users.size,
+                isStarted: room.isStarted,
+                existingUsers: existingUsers
+            });
+
+            socket.to(roomId).emit("user_joined", {
+                message: `A user joined the race`,
+                playerId: socket.id,
+                userCount: room.users.size
+            });
+        });
+
+        socket.on("join_race", (roomId: string) => {
+            // console.log(`User ${socket.id} attempting to join existing room: ${roomId}`);
+
+            if (!roomData.has(roomId)) {
+                socket.emit("join_error", { 
+                    roomId, 
+                    message: "Race ID does not exist. Please check the ID and try again." 
+                });
+                return;
+            }
+
+            socket.join(roomId);
+            // console.log(`User ${socket.id} successfully joined room: ${roomId}`);
+
+            const room = roomData.get(roomId)!
             
             const existingUsers = Array.from(room.users);
             room.users.add(socket.id);

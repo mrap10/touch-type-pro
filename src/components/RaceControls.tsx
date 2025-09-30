@@ -7,19 +7,25 @@ interface RaceControlsProps {
     onCreateRoom: () => void;
     onJoinRoom: (roomId: string) => void;
     isConnected: boolean;
+    error?: string | null;
+    onClearError?: () => void;
 }
 
-export default function RaceControls({ onCreateRoom, onJoinRoom, isConnected }: RaceControlsProps) {
+export default function RaceControls({ onCreateRoom, onJoinRoom, isConnected, error, onClearError }: RaceControlsProps) {
     const [roomId, setRoomId] = useState<string>("");
 
     const handleJoinRoom = () => {
         if (roomId.trim()) {
+            onClearError?.();
             onJoinRoom(roomId.trim().toUpperCase());
         }
     };
 
     const handleRoomIdChange = (value: string) => {
         setRoomId(value.toUpperCase());
+        if (error) {
+            onClearError?.();
+        }
     };
 
     return (
@@ -70,6 +76,10 @@ export default function RaceControls({ onCreateRoom, onJoinRoom, isConnected }: 
                         </button>
                     </div>
                 </div>
+
+                {error && (
+                    <div className="mt-4 text-red-600 text-center">{error}</div>
+                )}
             </div>
 
             <div className="text-center text-sm text-gray-500 dark:text-gray-400">

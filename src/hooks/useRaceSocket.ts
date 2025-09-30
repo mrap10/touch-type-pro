@@ -14,7 +14,7 @@ export default function useRaceSocket(
     const lastProgressSent = useRef<number>(0);
     const progressThrottleRef = useRef<NodeJS.Timeout | null>(null);
     
-    const { onProgressUpdate, onUserJoined, onUserLeft, onRaceCompleted, onRoomJoined, onRaceStarted, onCountdownStarted, onCountdownTick, onCountdownCancelled, onRaceReset, onCountdownRejected, onRematchRequested, onRematchAccepted, onRematchDeclined } = callbacks;
+    const { onProgressUpdate, onUserJoined, onUserLeft, onRaceCompleted, onRoomJoined, onRaceStarted, onCountdownStarted, onCountdownTick, onCountdownCancelled, onRaceReset, onCountdownRejected, onRematchRequested, onRematchAccepted, onRematchDeclined, onJoinError } = callbacks;
 
     useEffect(() => {
         if (!socketRef.current) {
@@ -72,6 +72,9 @@ export default function useRaceSocket(
             socket.on("rematch_declined", (data: { declinerId: string; declinerName: string }) => {
                 onRematchDeclined?.(data);
             });
+            socket.on("join_error", (data: { roomId: string; message: string }) => {
+                onJoinError?.(data);
+            });
         }
 
         return () => {
@@ -79,23 +82,14 @@ export default function useRaceSocket(
                 clearTimeout(progressThrottleRef.current);
             }
         };
-    }, [onProgressUpdate, onUserJoined, onUserLeft, onRaceCompleted, onRaceStarted, onRoomJoined, onCountdownStarted, onCountdownTick, onCountdownCancelled, onRaceReset, onCountdownRejected, onRematchRequested, onRematchAccepted, onRematchDeclined]);
+    }, [onProgressUpdate, onUserJoined, onUserLeft, onRaceCompleted, onRaceStarted, onRoomJoined, onCountdownStarted, onCountdownTick, onCountdownCancelled, onRaceReset, onCountdownRejected, onRematchRequested, onRematchAccepted, onRematchDeclined, onJoinError]);
 
     useEffect(() => {
         if (!roomId || !socketRef.current) return;
-
-        const socket = socketRef.current;
-
-        if (roomIdRef.current && roomIdRef.current !== roomId) {
-            socket.emit("leave_race", roomIdRef.current);
-        }
-
         roomIdRef.current = roomId;
-        socket.emit("join_race", roomId);
-
         return () => {
             if (roomIdRef.current) {
-                socket.emit("leave_race", roomIdRef.current);
+                socketRef.current?.emit("leave_race", roomIdRef.current);
             }
         };
     }, [roomId]);
@@ -167,6 +161,28 @@ export default function useRaceSocket(
         socketRef.current.emit("reset_race", roomIdRef.current);
     }, []);
 
+    const createRace = useCallback((roomId: string) => {
+        if (!socketRef.current) return;
+        
+        if (roomIdRef.current && roomIdRef.current !== roomId) {
+            socketRef.current.emit("leave_race", roomIdRef.current);
+        }
+
+        roomIdRef.current = roomId;
+        socketRef.current.emit("create_race", roomId);
+    }, []);
+
+    const joinRoom = useCallback((roomId: string) => {
+        if (!socketRef.current) return;
+        
+        if (roomIdRef.current && roomIdRef.current !== roomId) {
+            socketRef.current.emit("leave_race", roomIdRef.current);
+        }
+
+        roomIdRef.current = roomId;
+        socketRef.current.emit("join_race", roomId);
+    }, []);
+
     const requestRematch = useCallback(() => {
         if (!socketRef.current || !roomIdRef.current) return;
         socketRef.current.emit("request_rematch", roomIdRef.current);
@@ -230,6 +246,8 @@ export default function useRaceSocket(
         requestRematch,
         acceptRematch,
         declineRematch,
+        createRace,
+        joinRoom,
         isConnected: !!socketRef.current?.connected,
         socketId: socketRef.current?.id
     };

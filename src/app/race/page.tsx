@@ -15,10 +15,12 @@ import RaceShareCard from "@/components/RaceShareCard";
 export default function RacePage() {
     const [isShareOpen, setIsShareOpen] = useState(false);
     const [notification, setNotification] = useState<string | null>(null);
+    const [joinError, setJoinError] = useState<string | null>(null);
     const raceState = useRaceState();
     const {
         currentRoomId,
         isInRace,
+        isCreatingRoom,
         raceText,
         progress,
         opponents,
@@ -48,7 +50,7 @@ export default function RacePage() {
     const [countdownRemaining, setCountdownRemaining] = useState<number | null>(null);
     const [countdownInitiator, setCountdownInitiator] = useState<string | null>(null);
     const [isCountdownPending, setIsCountdownPending] = useState(false);
-    const { sendProgress, finishRace, disconnect, isConnected, socketId, initiateCountdown, cancelCountdown, resetRace } = useRaceSocket(
+    const { sendProgress, finishRace, disconnect, isConnected, socketId, initiateCountdown, cancelCountdown, resetRace, createRace, joinRoom: socketJoinRoom } = useRaceSocket(
         currentRoomId,
         {
             onProgressUpdate: (data) => {
@@ -87,9 +89,36 @@ export default function RacePage() {
             },
             onCountdownRejected: () => {
                 setIsCountdownPending(false);
+            },
+            onJoinError: (data) => {
+                resetRaceState();
+                setJoinError(data.message);
             }
         }
     );
+
+    const handleCreateRoom = () => {
+        createRoom();
+    };
+
+    const handleJoinRoom = (roomId: string) => {
+        joinRoom(roomId);
+    };
+
+    const clearJoinError = () => {
+        setJoinError(null);
+    };
+
+    useEffect(() => {
+        if (currentRoomId && isConnected) {
+            console.log("Room ID changed:", { currentRoomId, isCreatingRoom });
+            if (isCreatingRoom) {
+                createRace(currentRoomId);
+            } else {
+                socketJoinRoom(currentRoomId);
+            }
+        }
+    }, [currentRoomId, isConnected, isCreatingRoom, createRace, socketJoinRoom]);
 
     useEffect(() => {
         if (socketId && socketId !== currentPlayerId) {
@@ -152,9 +181,11 @@ export default function RacePage() {
             <div>
                 <Navbar />
                 <RaceControls
-                    onCreateRoom={createRoom}
-                    onJoinRoom={joinRoom}
+                    onCreateRoom={handleCreateRoom}
+                    onJoinRoom={handleJoinRoom}
                     isConnected={isConnected}
+                    error={joinError}
+                    onClearError={clearJoinError}
                 />
             </div>
         );

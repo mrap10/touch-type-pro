@@ -49,6 +49,7 @@ export interface RaceSocketCallbacks {
     onRematchRequested?: (data: { requesterId: string; requesterName: string }) => void;
     onRematchAccepted?: (data: { accepterId: string; accepterName: string }) => void;
     onRematchDeclined?: (data: { declinerId: string; declinerName: string }) => void;
+    onJoinError?: (data: { roomId: string; message: string }) => void;
 }
 
 export interface CountdownState {
