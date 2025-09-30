@@ -3,6 +3,7 @@ export interface Opponent {
     progress: number;
     wpm?: number;
     accuracy?: number;
+    username?: string;
 }
 
 export interface RaceStats {
@@ -19,11 +20,13 @@ export interface RaceStats {
 export interface RaceProgressData {
     playerId: string;
     progress: number;
+    username?: string;
 }
 
 export interface UserEventData {
     message: string;
     playerId: string;
+    username?: string;
 }
 
 export interface RaceCompletedData {

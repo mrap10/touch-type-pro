@@ -14,9 +14,10 @@ interface RaceShareCardProps {
     accuracy: number;
     raceResults?: Map<string, PlayerResult>;
     currentPlayerId?: string;
+    usernamesMap?: Map<string, string | undefined>;
 }
 
-export default function RaceShareCard({ isOpen, onClose, wpm, accuracy, raceResults, currentPlayerId }: RaceShareCardProps) {
+export default function RaceShareCard({ isOpen, onClose, wpm, accuracy, raceResults, currentPlayerId, usernamesMap }: RaceShareCardProps) {
     const cardRef = useRef<HTMLDivElement>(null);
 
     const sortedResults = useMemo(() => {
@@ -35,7 +36,10 @@ export default function RaceShareCard({ isOpen, onClose, wpm, accuracy, raceResu
 
     const getDisplayName = (result: PlayerResult | undefined, index: number) => {
         if (!result) return `Racer${index + 1}`;
-        if (currentPlayerId && result.playerId === currentPlayerId) return 'You';
+        const isSelf = currentPlayerId && result.playerId === currentPlayerId;
+        const uname = usernamesMap?.get(result.playerId);
+        if (uname) return isSelf ? `${uname} (you)` : uname;
+        if (isSelf) return 'You (you)';
         return `Player ${result.playerId.slice(-4)}`;
     };
 

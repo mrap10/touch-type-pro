@@ -7,6 +7,7 @@ interface RaceResultsProps {
     currentPlayerResult: PlayerResult | null;
     onRematch?: () => void;
     onShare?: () => void;
+    usernamesMap?: Map<string, string | undefined>;
 }
 
 export default function RaceResults({ 
@@ -14,7 +15,8 @@ export default function RaceResults({
     raceResults, 
     currentPlayerResult, 
     onRematch, 
-    onShare 
+    onShare,
+    usernamesMap
 }: RaceResultsProps) {
     const formatTime = (milliseconds: number) => {
         if (!milliseconds || milliseconds <= 0) {
@@ -48,6 +50,8 @@ export default function RaceResults({
     };
 
     const getPlayerName = (playerId: string) => {
+        const uname = usernamesMap?.get(playerId);
+        if (uname) return uname;
         if (currentPlayerResult && playerId === currentPlayerResult.playerId) return 'You';
         return `Player ${playerId.slice(-4)}`;
     };

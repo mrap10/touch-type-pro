@@ -161,7 +161,7 @@ export default function useRaceSocket(
         socketRef.current.emit("reset_race", roomIdRef.current);
     }, []);
 
-    const createRace = useCallback((roomId: string) => {
+    const createRace = useCallback((roomId: string, username?: string) => {
         if (!socketRef.current) return;
         
         if (roomIdRef.current && roomIdRef.current !== roomId) {
@@ -169,10 +169,12 @@ export default function useRaceSocket(
         }
 
         roomIdRef.current = roomId;
-        socketRef.current.emit("create_race", roomId);
+        // dual emit for backward compatibility
+        socketRef.current.emit("create_race", roomId); // legacy
+        socketRef.current.emit("create_race", { roomId, username }); // new with username
     }, []);
 
-    const joinRoom = useCallback((roomId: string) => {
+    const joinRoom = useCallback((roomId: string, username?: string) => {
         if (!socketRef.current) return;
         
         if (roomIdRef.current && roomIdRef.current !== roomId) {
@@ -181,6 +183,7 @@ export default function useRaceSocket(
 
         roomIdRef.current = roomId;
         socketRef.current.emit("join_race", roomId);
+        socketRef.current.emit("join_race", { roomId, username });
     }, []);
 
     const requestRematch = useCallback(() => {

@@ -23,7 +23,7 @@ export default function ShareCard({ isOpen, onClose, wpm, accuracy, errors, time
             const dataUrl = await toPng(cardRef.current);
             const link = document.createElement('a');
             link.href = dataUrl;
-            link.download = `typing-results-${Date.now()}.png`;
+            link.download = `touchtypepro-${Date.now()}.png`;
             link.click();
         }
     };
@@ -53,7 +53,12 @@ export default function ShareCard({ isOpen, onClose, wpm, accuracy, errors, time
                                 <h1 className="font-bold">A</h1>
                             </div>
                             <div>
-                                <p className="font-bold text-xl rounded-xl">mrtestdotcom</p>
+                                <input 
+                                    type="text"
+                                    placeholder="click here to edit username" 
+                                    className="border-none rounded-lg w-full focus:outline-none text-xl font-bold placeholder:font-normal caret-emerald-400"
+                                />
+                                {/* <p className="font-bold text-xl rounded-xl">mrtestdotcom</p> */}
                                 <p className="text-gray-500">Just completed a typing test!</p>
                             </div>
                         </div>

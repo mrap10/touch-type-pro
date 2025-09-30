@@ -6,19 +6,24 @@ import React, { useMemo } from "react";
 
 interface OpponentsListProps {
     opponents: Map<string, Opponent>;
+    currentPlayerId?: string;
 }
 
-export default function OpponentsList({ opponents }: OpponentsListProps) {
+export default function OpponentsList({ opponents, currentPlayerId }: OpponentsListProps) {
     const { opponentArray, version } = useMemo(() => {
-        const arr = Array.from(opponents.entries()).map(([id, opp]) => ({
+        let arr = Array.from(opponents.entries()).map(([id, opp]) => ({
             playerId: id,
             progress: opp.progress ?? 0,
             wpm: opp.wpm,
             accuracy: opp.accuracy,
+            username: opp.username
         }));
+        if (currentPlayerId) {
+            arr = arr.filter(o => o.playerId !== currentPlayerId);
+        }
         const v = arr.map(o => `${o.playerId}:${o.progress.toFixed(2)}`).join("|");
         return { opponentArray: arr, version: v };
-    }, [opponents]);
+    }, [opponents, currentPlayerId]);
 
     if (opponentArray.length === 0) {
         return null;
@@ -28,7 +33,7 @@ export default function OpponentsList({ opponents }: OpponentsListProps) {
         <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg p-4">
             <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                 <Users size={20} />
-                Opponents ({opponentArray.length})
+                {currentPlayerId ? 'Opponents' : 'User list'} ({opponentArray.length})
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" data-version={version}>
                 {opponentArray.map((opponent, index) => {
@@ -58,8 +63,8 @@ const OpponentCard = React.memo(function OpponentCard({ opponent, index }: Oppon
     return (
         <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <div className="flex items-center justify-between gap-2 mb-1">
-                <p className="text-gray-500 dark:text-gray-400 text-sm">
-                    Player {index + 1}
+                <p className="text-gray-500 dark:text-gray-400 text-sm truncate max-w-[90px]" title={opponent.username || `Player ${index + 1}`}>
+                    {opponent.username || `Player ${index + 1}`}
                 </p>
                 <p className="text-xl font-bold text-orange-500 tabular-nums">
                     {display}%

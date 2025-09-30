@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Navbar from "@/components/Navbar";
 import RaceControls from "@/components/RaceControls";
 import RaceHeader from "@/components/RaceHeader";
@@ -44,7 +44,9 @@ export default function RacePage() {
         handleRaceStarted,
         handlePlayerFinished,
         setCurrentPlayerId,
-        currentPlayerId
+        currentPlayerId,
+        username,
+        setUsername
     } = raceState;
 
     const [countdownRemaining, setCountdownRemaining] = useState<number | null>(null);
@@ -97,11 +99,13 @@ export default function RacePage() {
         }
     );
 
-    const handleCreateRoom = () => {
+    const handleCreateRoom = (uname: string) => {
+        setUsername(uname);
         createRoom();
     };
 
-    const handleJoinRoom = (roomId: string) => {
+    const handleJoinRoom = (roomId: string, uname: string) => {
+        setUsername(uname);
         joinRoom(roomId);
     };
 
@@ -113,18 +117,27 @@ export default function RacePage() {
         if (currentRoomId && isConnected) {
             console.log("Room ID changed:", { currentRoomId, isCreatingRoom });
             if (isCreatingRoom) {
-                createRace(currentRoomId);
+                createRace(currentRoomId, username);
             } else {
-                socketJoinRoom(currentRoomId);
+                socketJoinRoom(currentRoomId, username);
             }
         }
-    }, [currentRoomId, isConnected, isCreatingRoom, createRace, socketJoinRoom]);
+    }, [currentRoomId, isConnected, isCreatingRoom, createRace, socketJoinRoom, username]);
 
     useEffect(() => {
         if (socketId && socketId !== currentPlayerId) {
             setCurrentPlayerId(socketId);
         }
     }, [socketId, currentPlayerId, setCurrentPlayerId]);
+
+    // if username already captured before socket id arrived, inject it once id is known
+    useEffect(() => {
+        if (currentPlayerId && username) {
+            // trigger username map rebuild 
+            raceState.setUsername(username);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentPlayerId]);
 
     const handleStartRace = () => {
         console.log("handleStartRace called with state:", {
@@ -176,6 +189,17 @@ export default function RacePage() {
         setIsShareOpen(true);
     }
 
+    const usernamesMap = useMemo(() => {
+        const map = new Map<string, string | undefined>();
+        opponents.forEach((o, id) => {
+            if (o.username) map.set(id, o.username);
+        });
+        if (currentPlayerId && username) {
+            map.set(currentPlayerId, username);
+        }
+        return map;
+    }, [opponents, currentPlayerId, username]);
+
     if (!isInRace) {
         return (
             <div>
@@ -215,7 +239,7 @@ export default function RacePage() {
                     isCountdownPending={isCountdownPending}
                 />
 
-                <OpponentsList opponents={opponents} />
+                <OpponentsList opponents={opponents} currentPlayerId={currentPlayerId} />
 
                 {!isRaceStarted && (
                     <div className="flex flex-col items-center justify-center text-center mt-10">
@@ -260,6 +284,7 @@ export default function RacePage() {
                             resetRace();
                         }}
                         onShare={handleShare}
+                        usernamesMap={usernamesMap}
                     />
                 )}
 
@@ -271,6 +296,7 @@ export default function RacePage() {
                         accuracy={currentPlayerResult.accuracy}
                         raceResults={raceResults}
                         currentPlayerId={currentPlayerId}
+                        usernamesMap={usernamesMap}
                     />
                 )}
             </div>

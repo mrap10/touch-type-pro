@@ -4,29 +4,44 @@ import { Users } from "lucide-react";
 import { useState } from "react";
 
 interface RaceControlsProps {
-    onCreateRoom: () => void;
-    onJoinRoom: (roomId: string) => void;
+    onCreateRoom: (username: string) => void;
+    onJoinRoom: (roomId: string, username: string) => void;
     isConnected: boolean;
     error?: string | null;
     onClearError?: () => void;
 }
 
-export default function RaceControls({ onCreateRoom, onJoinRoom, isConnected, error, onClearError }: RaceControlsProps) {
+export default function RaceControls({ onCreateRoom, onJoinRoom, error, onClearError }: RaceControlsProps) {
     const [roomId, setRoomId] = useState<string>("");
+    const [username, setUsername] = useState<string>("");
+    const [usernameTouched, setUsernameTouched] = useState(false);
 
     const handleJoinRoom = () => {
+        if (!isUsernameValid) return;
         if (roomId.trim()) {
             onClearError?.();
-            onJoinRoom(roomId.trim().toUpperCase());
+            onJoinRoom(roomId.trim().toUpperCase(), username.trim());
         }
     };
 
     const handleRoomIdChange = (value: string) => {
         setRoomId(value.toUpperCase());
-        if (error) {
-            onClearError?.();
-        }
+        if (error) onClearError?.();
     };
+
+    const handleCreateRoom = () => {
+        if (!isUsernameValid) return;
+        onClearError?.();
+        onCreateRoom(username.trim());
+    }
+
+    const handleUsernameChange = (value: string) => {
+        setUsername(value);
+        if (error) onClearError?.();
+    };
+
+    const isUsernameValid = username.trim().length > 0;
+    const showUsernameError = usernameTouched && !isUsernameValid;
 
     return (
         <div className="flex flex-col justify-center items-center gap-6 min-h-[calc(100vh-4rem)] p-4">
@@ -40,13 +55,30 @@ export default function RaceControls({ onCreateRoom, onJoinRoom, isConnected, er
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 w-full max-w-md">
                 <div className="space-y-6">
                     <div>
-                        <button
-                            onClick={onCreateRoom}
-                            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3 px-6 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                        >
-                            <Users size={20} />
-                            Create New Race
-                        </button>
+                        <div className="space-y-2">
+                            <input
+                                type="text"
+                                placeholder="Enter a username to create/join race"
+                                value={username}
+                                onChange={(e) => handleUsernameChange(e.target.value)}
+                                onBlur={() => setUsernameTouched(true)}
+                                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white ${showUsernameError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-emerald-500'}`}
+                                maxLength={24}
+                                aria-required="true"
+                                aria-invalid={showUsernameError}
+                            />
+                            {showUsernameError && (
+                                <p className="text-sm text-red-600">Username is required</p>
+                            )}
+                            <button
+                                onClick={handleCreateRoom}
+                                disabled={!isUsernameValid}
+                                className="w-full mt-1 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-3 px-6 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                            >
+                                <Users size={20} />
+                                Create New Race
+                            </button>
+                        </div>
                     </div>
 
                     <div className="relative">
@@ -69,7 +101,7 @@ export default function RaceControls({ onCreateRoom, onJoinRoom, isConnected, er
                         />
                         <button
                             onClick={handleJoinRoom}
-                            disabled={!roomId.trim()}
+                            disabled={!roomId.trim() || !isUsernameValid}
                             className="w-full mt-3 bg-blue-500 hover:bg-blue-600 cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-3 px-6 rounded-lg font-semibold transition-colors"
                         >
                             Join Race
@@ -82,8 +114,11 @@ export default function RaceControls({ onCreateRoom, onJoinRoom, isConnected, er
                 )}
             </div>
 
-            <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-                Connection Status: {isConnected ? "Connected" : "Disconnected"}
+            <div className="text-center text-sm text-gray-500 dark:text-gray-400 space-y-1">
+                {/* <p>Connection Status: {isConnected ? "Connected" : "Disconnected"}</p> */}
+                {isUsernameValid && username && (
+                    <p className="text-xs">Playing as <span className="font-semibold">{username.trim()}</span></p>
+                )}
             </div>
         </div>
     );

@@ -13,6 +13,7 @@ export default function useRaceState() {
     const [raceText, setRaceText] = useState<string[]>([]);
     const [progress, setProgress] = useState(0);
     const [opponents, setOpponents] = useState<Map<string, Opponent>>(new Map());
+    const [username, setUsername] = useState<string>("");
     const [connectedUsers, setConnectedUsers] = useState<Set<string>>(new Set());
     const [serverUserCount, setServerUserCount] = useState<number>(1);
     const [isRaceStarted, setIsRaceStarted] = useState(false);
@@ -67,6 +68,7 @@ export default function useRaceState() {
         setRaceResults(new Map());
         setCurrentPlayerResult(null);
         setCurrentPlayerId("");
+        setUsername("");
     }, []);
 
     const prepareRematch = useCallback(() => {
@@ -121,7 +123,7 @@ export default function useRaceState() {
         });
     }, [raceStartTime, currentPlayerId, recomputePositions]);
 
-    const updateOpponentProgress = useCallback((data: { playerId: string; progress: number }) => {
+    const updateOpponentProgress = useCallback((data: { playerId: string; progress: number; username?: string }) => {
         // console.log("Updating opponent progress:", data);
         setOpponents(prev => {
             const newOpponents = new Map(prev);
@@ -129,12 +131,14 @@ export default function useRaceState() {
             if (newOpponents.has(data.playerId)) {
                 newOpponents.set(data.playerId, {
                     ...newOpponents.get(data.playerId)!,
-                    progress: data.progress
+                    progress: data.progress,
+                    username: newOpponents.get(data.playerId)!.username || data.username
                 });
             } else {
                 newOpponents.set(data.playerId, {
                     playerId: data.playerId,
-                    progress: data.progress
+                    progress: data.progress,
+                    username: data.username
                 });
             }
             // console.log("Updated opponents:", Array.from(newOpponents.entries()));
@@ -142,14 +146,15 @@ export default function useRaceState() {
         });
     }, []);
 
-    const addUser = useCallback((data: { playerId: string; userCount?: number }) => {
+    const addUser = useCallback((data: { playerId: string; userCount?: number; username?: string }) => {
         setConnectedUsers(prev => new Set(prev).add(data.playerId));
         setOpponents(prev => {
             const newOpponents = new Map(prev);
             if (!newOpponents.has(data.playerId)) {
                 newOpponents.set(data.playerId, {
                     playerId: data.playerId,
-                    progress: 0
+                    progress: 0,
+                    username: data.username
                 });
             }
             return newOpponents;
@@ -177,7 +182,7 @@ export default function useRaceState() {
         }
     }, []);
 
-    const handleRoomJoined = useCallback((data: { roomId: string; text: string[]; userCount: number; isStarted: boolean; existingUsers?: string[] }) => {
+    const handleRoomJoined = useCallback((data: { roomId: string; text: string[]; userCount: number; isStarted: boolean; existingUsers?: string[]; usersMeta?: Array<{ playerId: string; username?: string }> }) => {
         setRaceText(data.text);
         setIsRaceStarted(data.isStarted);
         setServerUserCount(data.userCount);
@@ -185,11 +190,16 @@ export default function useRaceState() {
         if (data.existingUsers && data.existingUsers.length > 0) {
             setOpponents(prev => {
                 const newOpponents = new Map(prev);
+                const usernameLookup = new Map<string, string | undefined>();
+                if (data.usersMeta) {
+                    data.usersMeta.forEach(u => usernameLookup.set(u.playerId, u.username));
+                }
                 data.existingUsers!.forEach(userId => {
                     if (!newOpponents.has(userId)) {
                         newOpponents.set(userId, {
                             playerId: userId,
-                            progress: 0
+                            progress: 0,
+                            username: usernameLookup.get(userId)
                         });
                     }
                 });
@@ -219,6 +229,21 @@ export default function useRaceState() {
             return newResults;
         });
     }, [recomputePositions]);
+
+    const updateLocalUsername = useCallback((name: string) => {
+        setUsername(name);
+        setOpponents(prev => {
+            if (!currentPlayerId) return prev; // will update later when id arrives
+            const newMap = new Map(prev);
+            const existing = newMap.get(currentPlayerId);
+            if (existing) {
+                newMap.set(currentPlayerId, { ...existing, username: name });
+            } else {
+                newMap.set(currentPlayerId, { playerId: currentPlayerId, progress: 0, username: name });
+            }
+            return newMap;
+        });
+    }, [currentPlayerId]);
 
     return {
         roomId,
@@ -255,5 +280,7 @@ export default function useRaceState() {
         
         playerCount: serverUserCount,
         currentPlayerId,
+        username,
+        setUsername: updateLocalUsername,
     };
 }
