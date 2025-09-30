@@ -82,7 +82,7 @@ export default function ShareCard({ isOpen, onClose, wpm, accuracy, errors, time
 
                         <div className="text-center border-t border-gray-200 dark:border-gray-600 pt-6 mt-6">
                             <p className="text-gray-600 dark:text-gray-400 italic">&ldquo;Every word counts — make them count fast&rdquo;</p>
-                            <p className="text-sm text-indigo-400 font-semibold mt-4">touchtype.com</p>
+                            <p className="text-sm text-indigo-400 font-semibold mt-4">touchtype.vercel.app</p>
                         </div>
                     </div>
 

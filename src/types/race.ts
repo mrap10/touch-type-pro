@@ -41,4 +41,18 @@ export interface RaceSocketCallbacks {
     onRaceCompleted?: (data: RaceCompletedData) => void;
     onRoomJoined?: (data: { roomId: string; text: string[]; userCount: number; isStarted: boolean; existingUsers?: string[] }) => void;
     onRaceStarted?: (data: { message: string; text: string[]; startTime: number }) => void;
+    onCountdownStarted?: (data: { duration: number; initiator: string; endsAt: number }) => void;
+    onCountdownTick?: (data: { remaining: number }) => void;
+    onCountdownCancelled?: (data: { by: string }) => void;
+    onRaceReset?: (data: { roomId: string; text: string[] }) => void;
+    onCountdownRejected?: (data: { reason: string }) => void;
+    onRematchRequested?: (data: { requesterId: string; requesterName: string }) => void;
+    onRematchAccepted?: (data: { accepterId: string; accepterName: string }) => void;
+    onRematchDeclined?: (data: { declinerId: string; declinerName: string }) => void;
+}
+
+export interface CountdownState {
+    remaining: number | null;
+    initiator: string | null;
+    isActive: boolean;
 }

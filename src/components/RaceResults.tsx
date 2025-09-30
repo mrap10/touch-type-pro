@@ -155,7 +155,7 @@ export default function RaceResults({
                     className="flex items-center space-x-1 px-3 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 cursor-pointer transition-colors"
                 >
                     <RotateCcw className="w-4 h-4" />
-                    <p>Rematch</p>
+                    <p>Race Again</p>
                 </button>
 
                 <button 

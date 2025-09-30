@@ -14,7 +14,7 @@ export default function useRaceSocket(
     const lastProgressSent = useRef<number>(0);
     const progressThrottleRef = useRef<NodeJS.Timeout | null>(null);
     
-    const { onProgressUpdate, onUserJoined, onUserLeft, onRaceCompleted, onRoomJoined, onRaceStarted } = callbacks;
+    const { onProgressUpdate, onUserJoined, onUserLeft, onRaceCompleted, onRoomJoined, onRaceStarted, onCountdownStarted, onCountdownTick, onCountdownCancelled, onRaceReset, onCountdownRejected, onRematchRequested, onRematchAccepted, onRematchDeclined } = callbacks;
 
     useEffect(() => {
         if (!socketRef.current) {
@@ -48,6 +48,30 @@ export default function useRaceSocket(
             socket.on("race_started", (data: { message: string; text: string[]; startTime: number }) => {
                 onRaceStarted?.(data);
             });
+            socket.on("countdown_started", (data: { duration: number; initiator: string; endsAt: number }) => {
+                onCountdownStarted?.(data);
+            });
+            socket.on("countdown_tick", (data: { remaining: number }) => {
+                onCountdownTick?.(data);
+            });
+            socket.on("countdown_cancelled", (data: { by: string }) => {
+                onCountdownCancelled?.(data);
+            });
+            socket.on("race_reset", (data: { roomId: string; text: string[] }) => {
+                onRaceReset?.(data);
+            });
+            socket.on("countdown_rejected", (data: { reason: string }) => {
+                onCountdownRejected?.(data);
+            });
+            socket.on("rematch_requested", (data: { requesterId: string; requesterName: string }) => {
+                onRematchRequested?.(data);
+            });
+            socket.on("rematch_accepted", (data: { accepterId: string; accepterName: string }) => {
+                onRematchAccepted?.(data);
+            });
+            socket.on("rematch_declined", (data: { declinerId: string; declinerName: string }) => {
+                onRematchDeclined?.(data);
+            });
         }
 
         return () => {
@@ -55,7 +79,7 @@ export default function useRaceSocket(
                 clearTimeout(progressThrottleRef.current);
             }
         };
-    }, [onProgressUpdate, onUserJoined, onUserLeft, onRaceCompleted, onRaceStarted, onRoomJoined]);
+    }, [onProgressUpdate, onUserJoined, onUserLeft, onRaceCompleted, onRaceStarted, onRoomJoined, onCountdownStarted, onCountdownTick, onCountdownCancelled, onRaceReset, onCountdownRejected, onRematchRequested, onRematchAccepted, onRematchDeclined]);
 
     useEffect(() => {
         if (!roomId || !socketRef.current) return;
@@ -128,6 +152,36 @@ export default function useRaceSocket(
         socketRef.current.emit("start_race", roomIdRef.current);
     }, []);
 
+    const initiateCountdown = useCallback((duration: number) => {
+        if (!socketRef.current || !roomIdRef.current) return;
+        socketRef.current.emit("initiate_countdown", { roomId: roomIdRef.current, duration });
+    }, []);
+
+    const cancelCountdown = useCallback(() => {
+        if (!socketRef.current || !roomIdRef.current) return;
+        socketRef.current.emit("cancel_countdown", { roomId: roomIdRef.current });
+    }, []);
+
+    const resetRace = useCallback(() => {
+        if (!socketRef.current || !roomIdRef.current) return;
+        socketRef.current.emit("reset_race", roomIdRef.current);
+    }, []);
+
+    const requestRematch = useCallback(() => {
+        if (!socketRef.current || !roomIdRef.current) return;
+        socketRef.current.emit("request_rematch", roomIdRef.current);
+    }, []);
+
+    const acceptRematch = useCallback(() => {
+        if (!socketRef.current || !roomIdRef.current) return;
+        socketRef.current.emit("accept_rematch", roomIdRef.current);
+    }, []);
+
+    const declineRematch = useCallback(() => {
+        if (!socketRef.current || !roomIdRef.current) return;
+        socketRef.current.emit("decline_rematch", roomIdRef.current);
+    }, []);
+
     const finishRace = useCallback((wpm: number, accuracy: number, errors: number, finishTime: number) => {
         if (!socketRef.current || !roomIdRef.current) return;
         
@@ -170,6 +224,12 @@ export default function useRaceSocket(
         finishRace, 
         leaveRace,
         disconnect,
+        initiateCountdown,
+        cancelCountdown,
+        resetRace,
+        requestRematch,
+        acceptRematch,
+        declineRematch,
         isConnected: !!socketRef.current?.connected,
         socketId: socketRef.current?.id
     };

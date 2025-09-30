@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import RaceControls from "@/components/RaceControls";
 import RaceHeader from "@/components/RaceHeader";
@@ -10,8 +10,11 @@ import TypingArea from "@/components/TypingArea";
 import useRaceSocket from "@/hooks/useRaceSocket";
 import useRaceState from "@/hooks/useRaceState";
 import RaceResults from "@/components/RaceResults";
+import RaceShareCard from "@/components/RaceShareCard";
 
 export default function RacePage() {
+    const [isShareOpen, setIsShareOpen] = useState(false);
+    const [notification, setNotification] = useState<string | null>(null);
     const raceState = useRaceState();
     const {
         currentRoomId,
@@ -42,7 +45,10 @@ export default function RacePage() {
         currentPlayerId
     } = raceState;
 
-    const { sendProgress, startRace: socketStartRace, finishRace, disconnect, isConnected, socketId } = useRaceSocket(
+    const [countdownRemaining, setCountdownRemaining] = useState<number | null>(null);
+    const [countdownInitiator, setCountdownInitiator] = useState<string | null>(null);
+    const [isCountdownPending, setIsCountdownPending] = useState(false);
+    const { sendProgress, finishRace, disconnect, isConnected, socketId, initiateCountdown, cancelCountdown, resetRace } = useRaceSocket(
         currentRoomId,
         {
             onProgressUpdate: (data) => {
@@ -52,7 +58,36 @@ export default function RacePage() {
             onUserLeft: removeUser,
             onRaceCompleted: handlePlayerFinished,
             onRoomJoined: handleRoomJoined,
-            onRaceStarted: handleRaceStarted
+            onRaceStarted: (data) => {
+                setCountdownRemaining(null);
+                setCountdownInitiator(null);
+                handleRaceStarted(data);
+            },
+            onCountdownStarted: ({ duration, initiator }) => {
+                setCountdownRemaining(duration);
+                setCountdownInitiator(initiator);
+                setIsCountdownPending(false);
+            },
+            onCountdownTick: ({ remaining }) => {
+                setCountdownRemaining(remaining);
+            },
+            onCountdownCancelled: () => {
+                setCountdownRemaining(null);
+                setCountdownInitiator(null);
+                setIsCountdownPending(false);
+            },
+            onRaceReset: ({ text }) => {
+                setCountdownRemaining(null);
+                setCountdownInitiator(null);
+                setIsCountdownPending(false);
+                raceState.setRaceText(text);
+                raceState.prepareRematch();
+                setNotification("New race is ready! Click 'Start Race' when ready.");
+                setTimeout(() => setNotification(null), 4000);
+            },
+            onCountdownRejected: () => {
+                setIsCountdownPending(false);
+            }
         }
     );
 
@@ -63,8 +98,29 @@ export default function RacePage() {
     }, [socketId, currentPlayerId, setCurrentPlayerId]);
 
     const handleStartRace = () => {
-        socketStartRace();
+        console.log("handleStartRace called with state:", {
+            countdownRemaining,
+            playerCount,
+            isRaceStarted,
+            isCountdownPending,
+            isRaceFinished
+        });
+        
+        if (!countdownRemaining && playerCount >= 2 && !isRaceStarted && !isCountdownPending && !isRaceFinished) {
+            setIsCountdownPending(true);
+            initiateCountdown(5);
+            // failsafe timeout: if no server ack in 3s, clear pending
+            setTimeout(() => setIsCountdownPending(false), 3000);
+        } else {
+            console.log("Cannot start race - conditions not met");
+        }
     };
+
+    const handleCancelCountdown = () => {
+        if (countdownInitiator === socketId) {
+            cancelCountdown();
+        }
+    }
 
     const handleLeaveRoom = () => {
         disconnect();
@@ -87,6 +143,10 @@ export default function RacePage() {
         sendProgress(progressPercent);
     };
 
+    const handleShare = () => {
+        setIsShareOpen(true);
+    }
+
     if (!isInRace) {
         return (
             <div>
@@ -104,6 +164,12 @@ export default function RacePage() {
         <div>
             <Navbar />
             <div className="p-4 min-h-[calc(100vh-4rem)]">
+                {notification && (
+                    <div className="mb-4 p-3 bg-blue-100 dark:bg-blue-900 border border-blue-300 dark:border-blue-700 rounded-lg text-blue-800 dark:text-blue-200 text-center">
+                        {notification}
+                    </div>
+                )}
+                
                 <RaceHeader
                     roomId={currentRoomId}
                     playerCount={playerCount}
@@ -111,15 +177,17 @@ export default function RacePage() {
                     isRaceFinished={isRaceFinished}
                     onStartRace={handleStartRace}
                     onLeaveRoom={handleLeaveRoom}
+                    countdown={countdownRemaining}
+                    countdownInitiator={countdownInitiator}
+                    canCancelCountdown={countdownInitiator === socketId}
+                    onCancelCountdown={handleCancelCountdown}
+                    isCountdownPending={isCountdownPending}
                 />
 
                 <OpponentsList opponents={opponents} />
 
                 {!isRaceStarted && (
                     <div className="flex flex-col items-center justify-center text-center mt-10">
-                        <p className="text-gray-600 dark:text-gray-400">
-                            Waiting for players to join...
-                        </p>
                         <h1 className="text-2xl md:text-3xl font-semibold text-gray-700 dark:text-gray-300 mt-20">
                             Typing Area will appear here once race is started!
                         </h1>
@@ -153,13 +221,24 @@ export default function RacePage() {
                         raceResults={raceResults}
                         currentPlayerResult={currentPlayerResult}
                         onRematch={() => {
-                            resetRaceState();
-                            createRoom();
+                            setNotification("Preparing new race...");
+                            setCountdownRemaining(null);
+                            setCountdownInitiator(null);
+                            setIsCountdownPending(false);
+                            resetRace();
                         }}
-                        onShare={() => {
-                            // TODO: Implement share functionality
-                            console.log('Share results clicked');
-                        }}
+                        onShare={handleShare}
+                    />
+                )}
+
+                {isShareOpen && currentPlayerResult && (
+                    <RaceShareCard
+                        isOpen={isShareOpen}
+                        onClose={() => setIsShareOpen(false)}
+                        wpm={currentPlayerResult.wpm}
+                        accuracy={currentPlayerResult.accuracy}
+                        raceResults={raceResults}
+                        currentPlayerId={currentPlayerId}
                     />
                 )}
             </div>

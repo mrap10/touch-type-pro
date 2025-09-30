@@ -65,6 +65,17 @@ export default function useRaceState() {
         setCurrentPlayerId("");
     }, []);
 
+    const prepareRematch = useCallback(() => {
+        setIsRaceStarted(false);
+        setIsRaceFinished(false);
+        setRaceStartTime(0);
+        setProgress(0);
+        setWpm(0);
+        setAccuracy(100);
+        setRaceResults(new Map());
+        setCurrentPlayerResult(null);
+    }, []);
+
     const updateProgress = useCallback((progressPercent: number, currentWpm: number, currentAccuracy: number) => {
         // console.log("Updating own race stats:", { progressPercent, currentWpm, currentAccuracy });
         setProgress(progressPercent);
@@ -235,6 +246,7 @@ export default function useRaceState() {
         handleRaceStarted,
         handlePlayerFinished,
         setCurrentPlayerId,
+        prepareRematch,
         
         playerCount: serverUserCount,
         currentPlayerId,

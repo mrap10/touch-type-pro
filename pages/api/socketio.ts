@@ -21,6 +21,12 @@ const roomData = new Map<string, {
     users: Set<string>;
     isStarted: boolean;
     startTime?: number;
+    countdown?: {
+        endsAt: number;
+        duration: number;
+        initiator: string;
+        interval?: NodeJS.Timeout;
+    }
 }>();
 
 function generateRaceText(): string[] {
@@ -138,6 +144,63 @@ export default function handler(req: NextApiRequest, res: NextApiResponseWithSoc
             }
         });
 
+        socket.on("initiate_countdown", ({ roomId, duration }: { roomId: string; duration: number }) => {
+            const room = roomData.get(roomId);
+            if (!room) return;
+            if (room.isStarted || room.countdown) {
+                socket.emit("countdown_rejected", { reason: "Race already started or countdown active" });
+                return;
+            }
+            if (room.users.size < 2) {
+                socket.emit("countdown_rejected", { reason: "Need at least 2 players" });
+                return;
+            }
+
+            const now = Date.now();
+            const endsAt = now + duration * 1000;
+            room.countdown = { endsAt, duration, initiator: socket.id };
+
+            io.to(roomId).emit("countdown_started", { duration, initiator: socket.id, endsAt });
+
+            room.countdown.interval = setInterval(() => {
+                const remainingMs = endsAt - Date.now();
+                const remainingSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
+                if (remainingSeconds > 0) {
+                    io.to(roomId).emit("countdown_tick", { remaining: remainingSeconds });
+                } else {
+                    if (room.countdown?.interval) clearInterval(room.countdown.interval);
+                    delete room.countdown;
+                    room.isStarted = true;
+                    room.startTime = Date.now();
+                    io.to(roomId).emit("race_started", {
+                        message: "Race has started!",
+                        text: room.text,
+                        startTime: room.startTime
+                    });
+                }
+            }, 1000);
+        });
+
+        socket.on("cancel_countdown", ({ roomId }: { roomId: string }) => {
+            const room = roomData.get(roomId);
+            if (!room || !room.countdown) return;
+            if (room.countdown.initiator !== socket.id) return;
+            if (room.countdown.interval) clearInterval(room.countdown.interval);
+            delete room.countdown;
+            io.to(roomId).emit("countdown_cancelled", { by: socket.id });
+        });
+
+        socket.on("reset_race", (roomId: string) => {
+            const room = roomData.get(roomId);
+            if (!room) return;
+            if (room.countdown?.interval) clearInterval(room.countdown.interval);
+            if (room.countdown) delete room.countdown;
+            room.isStarted = false;
+            room.startTime = undefined;
+            room.text = generateRaceText();
+            io.to(roomId).emit("race_reset", { roomId, text: room.text });
+        });
+
         socket.on("leave_race", (roomId: string) => {
             socket.leave(roomId);
             console.log(`User ${socket.id} left room: ${roomId}`);
@@ -145,6 +208,12 @@ export default function handler(req: NextApiRequest, res: NextApiResponseWithSoc
             const room = roomData.get(roomId);
             if (room) {
                 room.users.delete(socket.id);
+
+                if (room.countdown && room.countdown.initiator === socket.id) {
+                    if (room.countdown.interval) clearInterval(room.countdown.interval);
+                    delete room.countdown;
+                    io.to(roomId).emit("countdown_cancelled", { by: socket.id });
+                }
                 
                 if (room.users.size === 0) {
                     roomData.delete(roomId);
@@ -164,6 +233,11 @@ export default function handler(req: NextApiRequest, res: NextApiResponseWithSoc
             for (const [roomId, room] of roomData.entries()) {
                 if (room.users.has(socket.id)) {
                     room.users.delete(socket.id);
+                    if (room.countdown && room.countdown.initiator === socket.id) {
+                        if (room.countdown.interval) clearInterval(room.countdown.interval);
+                        delete room.countdown;
+                        socket.to(roomId).emit("countdown_cancelled", { by: socket.id });
+                    }
                     
                     socket.to(roomId).emit("user_left", {
                         message: "A user has disconnected",
