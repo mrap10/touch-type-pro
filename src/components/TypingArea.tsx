@@ -15,6 +15,7 @@ interface TypingAreaProps {
     duration: number;
     onTextUpdate?: (newText: string[]) => void;
     onProgress?: (progress: number, wpm: number, accuracy: number) => void;
+    showRestart?: boolean;
 }
 
 export default function TypingArea({ 
@@ -26,6 +27,7 @@ export default function TypingArea({
     duration, 
     onTextUpdate,
     onProgress,
+    showRestart = true,
 }: TypingAreaProps) {
     const { currentText, targetText, handleChange, handleRestart } = useTypingTest({
         text,
@@ -92,12 +94,14 @@ export default function TypingArea({
                 ))}
             </div>
 
-            <button 
-                onClick={handleRestart}
-                className="mt-8 p-3 bg-emerald-200 hover:bg-emerald-300 cursor-pointer text-black rounded-full transition-colors duration-200 flex items-center justify-center"
-            >
-                <RotateCcw size={20} />
-            </button>
+            {showRestart && (
+                <button 
+                    onClick={handleRestart}
+                    className="mt-8 p-3 bg-emerald-200 hover:bg-emerald-300 cursor-pointer text-black rounded-full transition-colors duration-200 flex items-center justify-center"
+                >
+                    <RotateCcw size={20} />
+                </button>
+            )}
         </div>
     );
 }

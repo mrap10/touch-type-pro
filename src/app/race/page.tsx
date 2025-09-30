@@ -212,6 +212,7 @@ export default function RacePage() {
                         duration={30} // should be made configurable
                         onTextUpdate={() => {}}
                         onProgress={handleProgress}
+                        showRestart={false}
                     />
                 )}
 

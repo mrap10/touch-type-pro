@@ -55,6 +55,15 @@ export function useTypingTest({ text, isActive, isFinished, duration, setIsRunni
         setDisplayWords(text.slice(0, DISPLAY_WORD_COUNT));
         setWordOffset(0);
         setWordsCompleted(0);
+
+        setCurrentText("");
+        setStartTime(null);
+        setTypingData([]);
+        setTotalCharactersTyped(0);
+        setTotalCorrectCharacters(0);
+        setTotalIncorrectKeystrokes(0);
+        hasCompletedRef.current = false;
+        setIsRunning(false);
     }, [text]);
 
     // sliding window logic (disabled for short races)
@@ -208,10 +217,10 @@ export function useTypingTest({ text, isActive, isFinished, duration, setIsRunni
         }
 
         onComplete({ wpm, accuracy, errors, typingData: finalTypingData });
-    }, [isFinished, currentMatchCorrect, currentMatchIncorrect, currentText.length, duration, onComplete, startTime, totalCharactersTyped, totalCorrectCharacters, totalIncorrectKeystrokes, typingData]);
+    }, [isFinished, currentMatchCorrect, currentMatchIncorrect, currentText.length, duration, startTime, totalCharactersTyped, totalCorrectCharacters, totalIncorrectKeystrokes, typingData]); // Remove onComplete from dependencies
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (isActive && !startTime) {
+        if (!startTime) {
             setStartTime(Date.now());
             setIsRunning(true);
         }

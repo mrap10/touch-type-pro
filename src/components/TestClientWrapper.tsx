@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import TypingArea from "./TypingArea";
 import ResultsCard from "./ResultsCard";
 import Timer from "./Timer";
@@ -35,11 +35,12 @@ export default function TestClientWrapper() {
             setDuration(newDuration);
             setIsFinished(false);
             setResults(null);
+            setIsRunning(false);
             setText(generateRandomText(50));
         }
     };
 
-    const handleComplete = (calculatedStats: {
+    const handleComplete = useCallback((calculatedStats: {
         wpm: number;
         accuracy: number;
         errors: number;
@@ -48,7 +49,7 @@ export default function TestClientWrapper() {
         setResults(calculatedStats);
         setIsFinished(true);
         setIsRunning(false);
-    };
+    }, []);
 
     const handleRestart = () => {
         setText(generateRandomText(50));
@@ -61,9 +62,9 @@ export default function TestClientWrapper() {
         setIsShareOpen(true);
     }
 
-    const handleTextUpdate = (newText: string[]) => {
+    const handleTextUpdate = useCallback((newText: string[]) => {
         setText(newText);
-    };
+    }, []);
 
     return (
         <div className="max-h-screen flex flex-col">
