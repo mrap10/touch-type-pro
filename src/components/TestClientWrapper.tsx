@@ -9,7 +9,7 @@ import { Time } from "./Timer";
 import ShareCard from "./ShareCard";
 
 export default function TestClientWrapper() {
-    const [text, setText] = useState<string[]>([]); // Start empty
+    const [text, setText] = useState<string[]>([]);
     const [isRunning, setIsRunning] = useState(false);
     const [isFinished, setIsFinished] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
@@ -22,7 +22,7 @@ export default function TestClientWrapper() {
      }>(null);
 
     useEffect(() => {
-        setText(generateRandomText(50));
+        setText(generateRandomText(100));
     }, []);
 
     const handleTimeUp = () => {
@@ -36,7 +36,7 @@ export default function TestClientWrapper() {
             setIsFinished(false);
             setResults(null);
             setIsRunning(false);
-            setText(generateRandomText(50));
+            setText(generateRandomText(100));
         }
     };
 
@@ -52,7 +52,7 @@ export default function TestClientWrapper() {
     }, []);
 
     const handleRestart = () => {
-        setText(generateRandomText(50));
+        setText(generateRandomText(100));
         setIsRunning(false);
         setIsFinished(false);
         setResults(null);

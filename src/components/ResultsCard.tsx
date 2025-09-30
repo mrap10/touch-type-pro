@@ -68,6 +68,23 @@ export default function ResultsCard({ wpm, accuracy, errors, typingData, duratio
                     <p className="text-3xl text-gray-800 dark:text-gray-500">time</p>
                 </div>
             </div>
+
+            <div className="flex space-x-4 mt-3">
+                <button 
+                    onClick={onRestart}
+                    className="p-3 bg-emerald-200 hover:bg-emerald-300 cursor-pointer text-black rounded-full transition-colors duration-200 flex items-center justify-center"
+                >
+                    <RotateCcw size={20} />
+                </button>
+
+                <button
+                    onClick={onShare}
+                    className="p-3 bg-emerald-200 hover:bg-emerald-300 cursor-pointer text-black rounded-full transition-colors duration-200 flex items-center justify-center"
+                >
+                    <Share2 size={20} />
+                </button>
+            </div>
+
             <div className="w-full h-64 p-5">
                 <ResponsiveContainer width="100%" height="100%">
                     <LineChart
@@ -123,22 +140,6 @@ export default function ResultsCard({ wpm, accuracy, errors, typingData, duratio
                         />
                     </LineChart>
                 </ResponsiveContainer>
-            </div>
-
-            <div className="flex space-x-4">
-                <button 
-                    onClick={onRestart}
-                    className="mt-8 p-3 bg-emerald-200 hover:bg-emerald-300 cursor-pointer text-black rounded-full transition-colors duration-200 flex items-center justify-center"
-                >
-                    <RotateCcw size={20} />
-                </button>
-
-                <button
-                    onClick={onShare}
-                    className="mt-8 p-3 bg-emerald-200 hover:bg-emerald-300 cursor-pointer text-black rounded-full transition-colors duration-200 flex items-center justify-center"
-                >
-                    <Share2 size={20} />
-                </button>
             </div>
         </div>
     );

@@ -45,7 +45,16 @@ export default function RaceShareCard({ isOpen, onClose, wpm, accuracy, raceResu
 
     const getInitial = (result: PlayerResult | undefined, fallbackIndex: number) => {
         if (!result) return String.fromCharCode(65 + (fallbackIndex % 26));
-        if (currentPlayerId && result.playerId === currentPlayerId) return 'Y';
+        
+        const username = usernamesMap?.get(result.playerId);
+        if (username && username.length > 0) {
+            return username.charAt(0).toUpperCase();
+        }
+        
+        if (currentPlayerId && result.playerId === currentPlayerId) {
+            return 'Y';
+        }
+        
         return String.fromCharCode(65 + (fallbackIndex % 26));
     };
 

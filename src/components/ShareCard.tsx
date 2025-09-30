@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { Download, X } from "lucide-react";
 import Xlogo from "@/assets/xlogo.png";
@@ -16,6 +16,7 @@ interface ShareCardProps {
 }
 
 export default function ShareCard({ isOpen, onClose, wpm, accuracy, errors, time }: ShareCardProps) {
+    const [username, setUsername] = useState("");
     const cardRef = useRef<HTMLDivElement>(null);
 
     const handleDownload = async () => {
@@ -50,11 +51,13 @@ export default function ShareCard({ isOpen, onClose, wpm, accuracy, errors, time
                     <div ref={cardRef} className="p-5 dark:bg-gray-800">
                         <div className="flex items-center space-x-3">
                             <div className="rounded-full w-10 h-10 flex items-center justify-center bg-emerald-500 text-white">
-                                <h1 className="font-bold">A</h1>
+                                <h1 className="font-bold">{username.charAt(0).toUpperCase()}</h1>
                             </div>
                             <div>
                                 <input 
                                     type="text"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
                                     placeholder="click here to edit username" 
                                     className="border-none rounded-lg w-full focus:outline-none text-xl font-bold placeholder:font-normal caret-emerald-400"
                                 />

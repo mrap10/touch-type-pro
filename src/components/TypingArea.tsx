@@ -73,25 +73,56 @@ export default function TypingArea({
             />
 
             <div className="flex flex-wrap text-xl leading-relaxed max-w-5xl mx-auto justify-center">
-                {targetText.split("").map((char, index) => (
-                    <span
-                        key={index}
-                        className={clsx(
-                            "inline-block text-3xl font-mono relative",
-                            char === "  " && "w-3",
-                            index < currentText.length
-                            ? currentText[index] === char
-                                ? "text-green-500 bg-green-100 dark:bg-green-900"
-                                : "text-red-500 bg-red-100 dark:bg-red-900"
-                            : "text-gray-400 dark:text-gray-600",
-                        )}
-                    >
-                        {char === " " ? "\u00A0" : char}
-                        {index === currentText.length && !isFinished && (
-                            <span className="absolute right-1.5 top-0 text-blue-500 animate-pulse font-bold">|</span>
-                        )}
-                    </span>
-                ))}
+                {targetText.split(" ").map((word, wordIndex) => {
+                    const wordsBeforeCurrent = targetText.split(" ").slice(0, wordIndex);
+                    const charsBeforeWord = wordsBeforeCurrent.join(" ").length + (wordIndex > 0 ? 1 : 0);
+                    const isLastWord = wordIndex === targetText.split(" ").length - 1;
+                    
+                    return (
+                        <React.Fragment key={wordIndex}>
+                            <span className="inline-block">
+                                {word.split("").map((char, charIndex) => {
+                                    const globalCharIndex = charsBeforeWord + charIndex;
+                                    return (
+                                        <span
+                                            key={charIndex}
+                                            className={clsx(
+                                                "inline-block text-3xl font-mono relative",
+                                                globalCharIndex < currentText.length
+                                                ? currentText[globalCharIndex] === char
+                                                    ? "text-green-500 bg-green-100 dark:bg-green-900"
+                                                    : "text-red-500 bg-red-100 dark:bg-red-900"
+                                                : "text-gray-400 dark:text-gray-600",
+                                            )}
+                                        >
+                                            {char}
+                                            {globalCharIndex === currentText.length && !isFinished && (
+                                                <span className="absolute right-1.5 top-0 text-blue-500 animate-pulse font-bold">|</span>
+                                            )}
+                                        </span>
+                                    );
+                                })}
+                            </span>
+                            {!isLastWord && (
+                                <span
+                                    className={clsx(
+                                        "inline-block text-3xl font-mono relative w-3",
+                                        charsBeforeWord + word.length < currentText.length
+                                        ? currentText[charsBeforeWord + word.length] === " "
+                                            ? "text-green-500 bg-green-100 dark:bg-green-900"
+                                            : "text-red-500 bg-red-100 dark:bg-red-900"
+                                        : "text-gray-400 dark:text-gray-600",
+                                    )}
+                                >
+                                    {"\u00A0"}
+                                    {charsBeforeWord + word.length === currentText.length && !isFinished && (
+                                        <span className="absolute right-1.5 top-0 text-blue-500 animate-pulse font-bold">|</span>
+                                    )}
+                                </span>
+                            )}
+                        </React.Fragment>
+                    );
+                })}
             </div>
 
             {showRestart && (

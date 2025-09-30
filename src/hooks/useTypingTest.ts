@@ -21,6 +21,7 @@ export function useTypingTest({ text, isActive, isFinished, duration, setIsRunni
     const RACE_WORD_TARGET = Math.max(DEFAULT_RACE_TARGET, text.length); // if server sends larger text, use that
     const disableSlidingWindow = RACE_WORD_TARGET <= DISPLAY_WORD_COUNT;
     const hasCompletedRef = useRef(false);
+    const initialTextRef = useRef<string[]>(text);
 
     const targetText = useMemo(
         () => displayWords.join(" "),
@@ -51,19 +52,29 @@ export function useTypingTest({ text, isActive, isFinished, duration, setIsRunni
     }, [currentText, targetText, totalCorrectCharacters, totalIncorrectKeystrokes, currentMatchCorrect, currentMatchIncorrect, isFinished]);
 
     useEffect(() => {
-        setWordPool(text);
-        setDisplayWords(text.slice(0, DISPLAY_WORD_COUNT));
-        setWordOffset(0);
-        setWordsCompleted(0);
+        const isExpansion = text.length >= initialTextRef.current.length && 
+                           initialTextRef.current.every((word, index) => word === text[index]);
+        
+        if (isExpansion) {
+            // word pool expansion
+            setWordPool(text);
+        } else {
+            // entire pool reset (timer change or test restarts)
+            initialTextRef.current = text;
+            setWordPool(text);
+            setDisplayWords(text.slice(0, DISPLAY_WORD_COUNT));
+            setWordOffset(0);
+            setWordsCompleted(0);
 
-        setCurrentText("");
-        setStartTime(null);
-        setTypingData([]);
-        setTotalCharactersTyped(0);
-        setTotalCorrectCharacters(0);
-        setTotalIncorrectKeystrokes(0);
-        hasCompletedRef.current = false;
-        setIsRunning(false);
+            setCurrentText("");
+            setStartTime(null);
+            setTypingData([]);
+            setTotalCharactersTyped(0);
+            setTotalCorrectCharacters(0);
+            setTotalIncorrectKeystrokes(0);
+            hasCompletedRef.current = false;
+            setIsRunning(false);
+        }
     }, [text]);
 
     // sliding window logic (disabled for short races)
@@ -74,30 +85,45 @@ export function useTypingTest({ text, isActive, isFinished, duration, setIsRunni
         const targetChars = targetText.length;
 
         if (typedChars > targetChars * 0.7 && targetChars > 0) {
-            const wordsTyped = currentText
-                .trim()
-                .split(/\s+/)
-                .filter((word) => word.length > 0).length;
-            const wordsToShift = Math.max(1, Math.floor(wordsTyped * 0.3));
-            const newOffset = wordOffset + wordsToShift;
+            // ended with a space (fully completed word) vs partial current word
+            const endsWithSpace = /\s$/.test(currentText);
+            const tokens = currentText.trim().length > 0
+                ? currentText.trim().split(/\s+/)
+                : [];
+            const fullyCompletedWords = endsWithSpace ? tokens.length : Math.max(0, tokens.length - 1);
 
-            // before sliding window
-            const correctInCurrentText = currentMatchCorrect;
-            setTotalCharactersTyped((prev) => prev + currentText.length);
-            setTotalCorrectCharacters((prev) => prev + correctInCurrentText);
-            setWordsCompleted((prev) => prev + wordsTyped);
+            if (fullyCompletedWords > 0) {
+                const completedPortionExpected = displayWords
+                    .slice(0, fullyCompletedWords)
+                    .join(" ") + " ";
 
-            if (wordPool.length < newOffset + DISPLAY_WORD_COUNT) {
-                const newWords = generateMoreWords(wordPool, 50);
-                setWordPool(newWords);
-                onTextUpdate?.(newWords);
+                const commitLength = Math.min(completedPortionExpected.length, currentText.length);
+
+                let commitCorrect = 0;
+                let commitIncorrect = 0;
+                for (let i = 0; i < commitLength; i++) {
+                    if (currentText[i] === targetText[i]) commitCorrect++; else commitIncorrect++;
+                }
+
+                setTotalCharactersTyped(prev => prev + commitLength);
+                setTotalCorrectCharacters(prev => prev + commitCorrect);
+                setWordsCompleted(prev => prev + fullyCompletedWords);
+
+                const newOffset = wordOffset + fullyCompletedWords;
+
+                if (wordPool.length < newOffset + DISPLAY_WORD_COUNT) {
+                    const newWords = generateMoreWords(wordPool, 50);
+                    setWordPool(newWords);
+                    onTextUpdate?.(newWords);
+                }
+
+                const newDisplayWords = wordPool.slice(newOffset, newOffset + DISPLAY_WORD_COUNT);
+                setDisplayWords(newDisplayWords);
+                setWordOffset(newOffset);
+
+                const remaining = currentText.slice(commitLength);
+                setCurrentText(remaining);
             }
-
-            const newDisplayWords = wordPool.slice(newOffset, newOffset + DISPLAY_WORD_COUNT);
-            setDisplayWords(newDisplayWords);
-            setWordOffset(newOffset);
-
-            setCurrentText("");
         }
 
         if (wordPool.length < wordOffset + DISPLAY_WORD_COUNT * 2) {
@@ -105,7 +131,7 @@ export function useTypingTest({ text, isActive, isFinished, duration, setIsRunni
             setWordPool(newWords);
             onTextUpdate?.(newWords);
         }
-    }, [currentText, targetText, wordPool, wordOffset, isActive, isFinished, onTextUpdate, currentMatchCorrect]);
+    }, [currentText, targetText, wordPool, wordOffset, isActive, isFinished, onTextUpdate, disableSlidingWindow, displayWords]);
 
     // to track typing performance at stable intervals
     useEffect(() => {
@@ -270,6 +296,7 @@ export function useTypingTest({ text, isActive, isFinished, duration, setIsRunni
     };
 
     const handleRestart = () => {
+        initialTextRef.current = wordPool;
         setCurrentText("");
         setIsRunning(false);
         setStartTime(null);
