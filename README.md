@@ -4,11 +4,17 @@ A web application designed to help users improve their typing speed and accuracy
 
 ## Features
 
+- Interactive typing tests
+- Real-time performance tracking
+- Multiplayer challenges
+- Comprehensive typing lessons
+
 ## Technologies Used
 
 - Next.js
 - TypeScript
 - Socket.io
+- Tailwind CSS
 
 ## Getting Started
 
@@ -29,10 +35,6 @@ npm run dev
 ```
 
 Then open your browser and navigate to `http://localhost:3000`.
-
-## Contributing
-
-If you'd like to contribute to Touch Type Pro, please fork the repository and submit a pull request. Contributions to make it better are welcome!
 
 ## License
 

@@ -2,7 +2,7 @@
 import Navbar from "@/components/Navbar";
 import TestClientWrapper from "@/components/TestClientWrapper";
 
-export default function Test() {
+export default function Type() {
     return (
         <div className="">
             <Navbar />

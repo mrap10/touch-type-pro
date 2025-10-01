@@ -11,13 +11,14 @@ export default function Navbar() {
 
     const navLinks = [
         { href: "/", label: "Home" },
-        { href: "/test", label: "Test" },
-        { href: "/race", label: "Race" }
+        { href: "/type", label: "Type" },
+        { href: "/race", label: "Race" },
+        { href: "/learn", label: "Learn" },
     ];
 
     const getNavLinkClassName = (href: string) => {
         const isActive = pathname === href;
-        const baseClasses = "mr-2 px-2 py-1 hover:text-emerald-500 focus:outline-none rounded-lg transition-colors";
+        const baseClasses = "sm:mr-2 px-2 py-1 hover:text-emerald-500 focus:outline-none rounded-lg transition-colors";
         
         if (isActive) {
             return `${baseClasses} text-emerald-400`;
@@ -48,7 +49,7 @@ export default function Navbar() {
 
     return (
         <nav className="p-4 flex justify-between items-center shadow dark:shadow-gray-800">
-            <h1 className="text-lg font-bold">TouchType<span className="text-emerald-500">Pro</span></h1>
+            <h1 className="sm:text-lg font-bold">TouchType<span className="text-emerald-500">Pro</span></h1>
             <div className="text-gray-600 font-semibold dark:text-gray-400 flex items-center">
                 {navLinks.map((link) => (
                     <Link 
@@ -68,9 +69,9 @@ export default function Navbar() {
                         : <Sun className="text-yellow-500 fill-yellow-500" />
                     }
                 </div>
-                <div className="rounded-full w-8 h-8 flex items-center justify-center bg-emerald-500 text-white">
+                {/* <div className="rounded-full w-8 h-8 flex items-center justify-center bg-emerald-500 text-white">
                     <h1 className="font-bold">A</h1>
-                </div>
+                </div> */}
             </div>
         </nav>
     );
