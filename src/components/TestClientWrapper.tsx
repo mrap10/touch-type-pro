@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import TypingArea from "./TypingArea";
 import ResultsCard from "./ResultsCard";
 import Timer from "./Timer";
+import CircularTimer from "./CircularTimer";
 import { generateRandomText } from "@/lib/TextGenerator";
 import { Time } from "./Timer";
 import ShareCard from "./ShareCard";
@@ -14,6 +15,7 @@ export default function TestClientWrapper() {
     const [isFinished, setIsFinished] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
     const [duration, setDuration] = useState<Time>(15);
+    const [timeLeft, setTimeLeft] = useState<number>(15);
     const [results, setResults] = useState<null | {
         wpm: number; 
         accuracy: number; 
@@ -25,6 +27,25 @@ export default function TestClientWrapper() {
         setText(generateRandomText(100));
     }, []);
 
+    useEffect(() => {
+        setTimeLeft(duration);
+    }, [duration]);
+
+    useEffect(() => {
+        if (!isRunning) return;
+
+        if (timeLeft <= 0) {
+            handleTimeUp();
+            return;
+        }
+
+        const interval = setInterval(() => {
+            setTimeLeft((prev) => prev - 1);
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [isRunning, timeLeft]);
+
     const handleTimeUp = () => {
         setIsFinished(true);
         setIsRunning(false);
@@ -33,6 +54,7 @@ export default function TestClientWrapper() {
     const handleDurationChange = (newDuration: Time) => {
         if (!isRunning) {
             setDuration(newDuration);
+            setTimeLeft(newDuration);
             setIsFinished(false);
             setResults(null);
             setIsRunning(false);
@@ -56,6 +78,7 @@ export default function TestClientWrapper() {
         setIsRunning(false);
         setIsFinished(false);
         setResults(null);
+        setTimeLeft(duration);
     };
 
     const handleShare = () => {
@@ -78,6 +101,15 @@ export default function TestClientWrapper() {
                             onDurationChange={handleDurationChange}
                         />
                     </div>
+                    
+                    <div className="flex-shrink-0 mb-5">
+                        <CircularTimer 
+                            timeLeft={timeLeft}
+                            duration={duration}
+                            isRunning={isRunning}
+                        />
+                    </div>
+                    
                     <div className="flex-1">
                         <TypingArea
                             text={text}

@@ -38,8 +38,8 @@ export default function RaceShareCard({ isOpen, onClose, wpm, accuracy, raceResu
         if (!result) return `Racer${index + 1}`;
         const isSelf = currentPlayerId && result.playerId === currentPlayerId;
         const uname = usernamesMap?.get(result.playerId);
-        if (uname) return isSelf ? `${uname} (you)` : uname;
-        if (isSelf) return 'You (you)';
+        if (uname) return isSelf ? `${uname} (You)` : uname;
+        if (isSelf) return 'You';
         return `Player ${result.playerId.slice(-4)}`;
     };
 
@@ -186,7 +186,7 @@ export default function RaceShareCard({ isOpen, onClose, wpm, accuracy, raceResu
                     <div className="flex justify-between space-x-4">
                         <button
                             onClick={handleTwitterShare}
-                            className="flex items-center gap-x-2 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg transition-colors cursor-pointer"
+                            className="flex items-center gap-x-2 bg-emerald-500 hover:bg-emerald-600 text-white sm:px-4 px-2 py-2 rounded-lg transition-colors cursor-pointer"
                         >
                             <Image width={16} height={16} src={Xlogo.src} alt="X logo" className="rounded-md" />
                             Share on Twitter

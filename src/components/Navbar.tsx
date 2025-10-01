@@ -3,9 +3,28 @@
 import { Moon, Sun } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
     const [darkMode, setDarkMode] = useState(false);
+    const pathname = usePathname();
+
+    const navLinks = [
+        { href: "/", label: "Home" },
+        { href: "/test", label: "Test" },
+        { href: "/race", label: "Race" }
+    ];
+
+    const getNavLinkClassName = (href: string) => {
+        const isActive = pathname === href;
+        const baseClasses = "mr-2 px-2 py-1 hover:text-emerald-500 focus:outline-none rounded-lg transition-colors";
+        
+        if (isActive) {
+            return `${baseClasses} text-emerald-400`;
+        }
+        
+        return `${baseClasses} focus:text-emerald-400 dark:focus:text-emerald-400`;
+    };
 
     useEffect(() => {
         const savedTheme = localStorage.getItem("theme");
@@ -29,17 +48,17 @@ export default function Navbar() {
 
     return (
         <nav className="p-4 flex justify-between items-center shadow dark:shadow-gray-800">
-            <h1 className="text-lg font-bold">TouchType</h1>
-            <div>
-                <Link href={"/"} className="mr-4 hover:underline">
-                    Home
-                </Link>
-                <Link href={"/test"} className="mr-4 hover:underline">
-                    Test
-                </Link>
-                <Link href={"/race"} className="hover:underline">
-                    Race
-                </Link>
+            <h1 className="text-lg font-bold">TouchType<span className="text-emerald-500">Pro</span></h1>
+            <div className="text-gray-600 font-semibold dark:text-gray-400 flex items-center">
+                {navLinks.map((link) => (
+                    <Link 
+                        key={link.href} 
+                        href={link.href} 
+                        className={getNavLinkClassName(link.href)}
+                    >
+                        {link.label}
+                    </Link>
+                ))}
             </div>
 
             <div className="flex items-center space-x-10">

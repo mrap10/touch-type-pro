@@ -220,7 +220,7 @@ export default function RacePage() {
             <Navbar />
             <div className="p-4 min-h-[calc(100vh-4rem)]">
                 {notification && (
-                    <div className="mb-4 p-3 bg-blue-100 dark:bg-blue-900 border border-blue-300 dark:border-blue-700 rounded-lg text-blue-800 dark:text-blue-200 text-center">
+                    <div className="mb-4 p-3 bg-blue-100 dark:bg-emerald-900 border border-emerald-300 dark:border-emerald-700 rounded-lg text-emerald-800 dark:text-emerald-200 text-center">
                         {notification}
                     </div>
                 )}
@@ -241,8 +241,16 @@ export default function RacePage() {
 
                 <OpponentsList opponents={opponents} currentPlayerId={currentPlayerId} />
 
-                {!isRaceStarted && (
-                    <div className="flex flex-col items-center justify-center text-center mt-10">
+                {countdownRemaining && !isRaceStarted && (
+                    <div className="flex items-center justify-center mt-7">
+                        <div className="text-6xl md:text-7xl font-extrabold text-emerald-500 opacity-70 select-none">
+                            {countdownRemaining}
+                        </div>
+                    </div>
+                )}
+
+                {!countdownRemaining && !isRaceStarted && (
+                    <div className="flex flex-col items-center justify-center text-center mt-7">
                         <h1 className="text-2xl md:text-3xl font-semibold text-gray-700 dark:text-gray-300 mt-20">
                             Typing Area will appear here once race is started!
                         </h1>
@@ -268,6 +276,7 @@ export default function RacePage() {
                         onTextUpdate={() => {}}
                         onProgress={handleProgress}
                         showRestart={false}
+                        className="h-[calc(95vh-120px)]"
                     />
                 )}
 

@@ -84,7 +84,7 @@ export default function RaceResults({
     }
 
     return (
-        <div className="mt-10 text-center text-gray-600 dark:text-gray-400">
+        <div className="mt-10 text-center text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 py-5">
             <div className="mb-6">
                 <h1 className="text-4xl font-semibold text-gray-700 dark:text-gray-300">
                     Race Results
@@ -144,8 +144,8 @@ export default function RaceResults({
                             </div>
                             
                             <div className="flex flex-col items-center">
-                                <div className="w-20 h-12 bg-gray-200 dark:bg-gray-600 rounded flex items-center justify-center text-sm">
-                                    Chart
+                                <div className="w-20 h-12 p-1 bg-gray-200 dark:bg-gray-600 rounded-lg flex items-center justify-center text-sm">
+                                    Chart (soon)
                                 </div>
                             </div>
                         </div>

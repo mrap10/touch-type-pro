@@ -52,20 +52,20 @@ export default function ResultsCard({ wpm, accuracy, errors, typingData, duratio
             <div className="m-6 p-6 grid grid-cols-4 gap-4 w-full text-center">
                 <div>
                     <h1 className="text-4xl text-gray-500 dark:text-gray-300">{wpm}</h1>
-                    <p className="text-3xl text-gray-800 dark:text-gray-500">wpm</p>
+                    <p className="sm:text-3xl text-gray-800 dark:text-gray-500">wpm</p>
                 </div>
 
                 <div>
                     <h1 className="text-4xl text-gray-500 dark:text-gray-300">{accuracy}%</h1>
-                    <p className="text-3xl text-gray-800 dark:text-gray-500">accuracy</p>
+                    <p className="sm:text-3xl text-gray-800 dark:text-gray-500">accuracy</p>
                 </div>
                 <div>
                     <h1 className="text-4xl text-gray-500 dark:text-gray-300">{errors}</h1>
-                    <p className="text-3xl text-gray-800 dark:text-gray-500">error strokes</p>
+                    <p className="sm:text-3xl text-gray-800 dark:text-gray-500">error strokes</p>
                 </div>
                 <div>
                     <h1 className="text-4xl text-gray-500 dark:text-gray-300">{duration}s</h1>
-                    <p className="text-3xl text-gray-800 dark:text-gray-500">time</p>
+                    <p className="sm:text-3xl text-gray-800 dark:text-gray-500">time</p>
                 </div>
             </div>
 

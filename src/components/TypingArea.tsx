@@ -16,6 +16,7 @@ interface TypingAreaProps {
     onTextUpdate?: (newText: string[]) => void;
     onProgress?: (progress: number, wpm: number, accuracy: number) => void;
     showRestart?: boolean;
+    className?: string;
 }
 
 export default function TypingArea({ 
@@ -28,6 +29,7 @@ export default function TypingArea({
     onTextUpdate,
     onProgress,
     showRestart = true,
+    className,
 }: TypingAreaProps) {
     const { currentText, targetText, handleChange, handleRestart } = useTypingTest({
         text,
@@ -60,7 +62,7 @@ export default function TypingArea({
         <div 
             ref={containerRef}
             onClick={handleContainerClick}
-            className="flex flex-col items-center justify-center h-[calc(95vh-120px)] w-full cursor-default"
+            className={clsx("px-2 flex flex-col items-center justify-center w-full cursor-default",className || "h-[calc(60vh-120px)]")}
         >
             <input 
                 ref={inputRef}

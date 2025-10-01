@@ -30,7 +30,7 @@ export default function OpponentsList({ opponents, currentPlayerId }: OpponentsL
     }
 
     return (
-        <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg p-4">
+        <div className="mb-6 bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
             <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                 <Users size={20} />
                 {currentPlayerId ? 'Opponents' : 'User list'} ({opponentArray.length})
@@ -61,18 +61,18 @@ const OpponentCard = React.memo(function OpponentCard({ opponent, index }: Oppon
     const display = progress < 10 && progress > 0 ? progress.toFixed(1) : Math.round(progress).toString();
     
     return (
-        <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+        <div className="text-center p-3 bg-gray-200 dark:bg-gray-700 rounded-lg">
             <div className="flex items-center justify-between gap-2 mb-1">
                 <p className="text-gray-500 dark:text-gray-400 text-sm truncate max-w-[90px]" title={opponent.username || `Player ${index + 1}`}>
                     {opponent.username || `Player ${index + 1}`}
                 </p>
-                <p className="text-xl font-bold text-orange-500 tabular-nums">
+                <p className="text-xl font-bold text-emerald-500 tabular-nums">
                     {display}%
                 </p>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1.5 mt-2">
                 <div
-                    className="bg-orange-500 h-1.5 rounded-full transition-all duration-300 ease-out"
+                    className="bg-emerald-500 h-1.5 rounded-full transition-all duration-300 ease-out"
                     style={{ width: `${progress}%` }}
                 />
             </div>
