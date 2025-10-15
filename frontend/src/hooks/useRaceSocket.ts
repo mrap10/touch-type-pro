@@ -18,8 +18,11 @@ export default function useRaceSocket(
 
     useEffect(() => {
         if (!socketRef.current) {
-            socketRef.current = io({
-                path: "/api/socketio",
+            const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+            
+            socketRef.current = io(backendUrl, {
+                transports: ['websocket', 'polling'],
+                withCredentials: true
             });
 
             const socket = socketRef.current;
