@@ -106,7 +106,6 @@ export default function TestClientWrapper() {
                         <CircularTimer 
                             timeLeft={timeLeft}
                             duration={duration}
-                            isRunning={isRunning}
                         />
                     </div>
                     

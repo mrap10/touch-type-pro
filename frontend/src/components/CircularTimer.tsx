@@ -3,10 +3,9 @@
 interface CircularTimerProps {
     timeLeft: number;
     duration: number;
-    isRunning: boolean;
 }
 
-export default function CircularTimer({ timeLeft, duration, isRunning }: CircularTimerProps) {
+export default function CircularTimer({ timeLeft, duration }: CircularTimerProps) {
     const progress = ((duration - timeLeft) / duration) * 100;
     
     const circumference = 2 * Math.PI * 45; // radius = 45
