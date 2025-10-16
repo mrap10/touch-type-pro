@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "TouchTypePro",
-  description: "A competitive typing application to test your touch typing skills and compete with friends.",
+  description: "A competitive typing application to test your touch typing skills, compete with friends and learn to type faster.",
 };
 
 export default function RootLayout({

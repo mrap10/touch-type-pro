@@ -4,7 +4,7 @@ import { DISPLAY_WORD_COUNT, getChunkInterval } from "@/constants/typing";
 import type { TypingData, UseTypingTestParams } from "@/types/typing";
 import { useCharacterCount } from "@/hooks/useCharacterCount";
 
-export function useTypingTest({ text, isActive, isFinished, duration, setIsRunning, onTextUpdate, onComplete, onProgress }: UseTypingTestParams) {
+export function useTypingTest({ text, isActive, isFinished, duration, difficulty, setIsRunning, onTextUpdate, onComplete, onProgress }: UseTypingTestParams) {
     const [currentText, setCurrentText] = useState("");
     const [typingData, setTypingData] = useState<TypingData[]>([]);
     const [startTime, setStartTime] = useState<number | null>(null);
@@ -113,7 +113,7 @@ export function useTypingTest({ text, isActive, isFinished, duration, setIsRunni
                 const newOffset = wordOffset + fullyCompletedWords;
 
                 if (wordPool.length < newOffset + DISPLAY_WORD_COUNT) {
-                    const newWords = generateMoreWords(wordPool, 50);
+                    const newWords = generateMoreWords(wordPool, undefined, difficulty);
                     setWordPool(newWords);
                     onTextUpdate?.(newWords);
                 }
@@ -128,11 +128,11 @@ export function useTypingTest({ text, isActive, isFinished, duration, setIsRunni
         }
 
         if (wordPool.length < wordOffset + DISPLAY_WORD_COUNT * 2) {
-            const newWords = generateMoreWords(wordPool, 50);
+            const newWords = generateMoreWords(wordPool, undefined, difficulty);
             setWordPool(newWords);
             onTextUpdate?.(newWords);
         }
-    }, [currentText, targetText, wordPool, wordOffset, isActive, isFinished, onTextUpdate, disableSlidingWindow, displayWords]);
+    }, [currentText, targetText, wordPool, wordOffset, isActive, isFinished, onTextUpdate, disableSlidingWindow, displayWords, difficulty]);
 
     // to track typing performance at stable intervals
     useEffect(() => {

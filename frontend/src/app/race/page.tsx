@@ -202,7 +202,7 @@ export default function RacePage() {
 
     if (!isInRace) {
         return (
-            <div>
+            <div className="bg-gray-200 dark:bg-gray-900">
                 <Navbar />
                 <RaceControls
                     onCreateRoom={handleCreateRoom}

@@ -17,7 +17,7 @@ export default function Landing() {
     }, [keys.length]);
 
     return (
-        <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-[calc(100vh-4rem)] flex flex-col transition-colors duration-300">
+        <div className="dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-[calc(100vh-4rem)] flex flex-col transition-colors duration-300">
             <main className="flex-grow flex flex-col items-center justify-center text-center px-4 relative">
                 <div className="relative z-10">
                     <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight">

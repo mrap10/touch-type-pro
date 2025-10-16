@@ -1,3 +1,5 @@
+import type { Difficulty } from "@/lib/TextGenerator";
+
 export interface TypingData {
     second: number;
     wpm: number;
@@ -9,6 +11,7 @@ export interface UseTypingTestParams {
     isActive: boolean;
     isFinished?: boolean;
     duration: number;
+    difficulty?: Difficulty;
     setIsRunning: (running: boolean) => void;
     onTextUpdate?: (newText: string[]) => void;
     onComplete: (stats: {

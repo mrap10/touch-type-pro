@@ -72,14 +72,14 @@ export default function ResultsCard({ wpm, accuracy, errors, typingData, duratio
             <div className="flex space-x-4 mt-3">
                 <button 
                     onClick={onRestart}
-                    className="p-3 bg-emerald-200 hover:bg-emerald-300 cursor-pointer text-black rounded-full transition-colors duration-200 flex items-center justify-center"
+                    className="p-3 bg-emerald-500 hover:bg-emerald-600 cursor-pointer text-white dark:text-black rounded-full transition-colors duration-200 flex items-center justify-center"
                 >
                     <RotateCcw size={20} />
                 </button>
 
                 <button
                     onClick={onShare}
-                    className="p-3 bg-emerald-200 hover:bg-emerald-300 cursor-pointer text-black rounded-full transition-colors duration-200 flex items-center justify-center"
+                    className="p-3 bg-emerald-500 hover:bg-emerald-600 cursor-pointer text-white dark:text-black rounded-full transition-colors duration-200 flex items-center justify-center"
                 >
                     <Share2 size={20} />
                 </button>
@@ -91,7 +91,7 @@ export default function ResultsCard({ wpm, accuracy, errors, typingData, duratio
                         data={finalChartData}
                         margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
                     >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#b1b1b3" />
                         <XAxis 
                             dataKey="second" 
                             label={{ value: "Time (seconds)", position: "insideBottomRight", offset: -10, dx: -20 }}
@@ -104,21 +104,13 @@ export default function ResultsCard({ wpm, accuracy, errors, typingData, duratio
                         />
                         <Tooltip 
                             contentStyle={{ 
-                                backgroundColor: '#f9fafb', 
+                                backgroundColor: '#f0f1f2', 
                                 border: '1px solid #e5e7eb',
                                 borderRadius: '8px',
-                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                color: '#111827'
                             }}
                         />
-                        {/* <Tooltip 
-                            contentStyle={{ 
-                                backgroundColor: 'rgb(31 41 55)', 
-                                border: '1px solid #374151',
-                                borderRadius: '8px',
-                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                                color: '#f9fafb'
-                            }}
-                        /> */}
                         <Legend />
                         <Line 
                             type="monotone" 

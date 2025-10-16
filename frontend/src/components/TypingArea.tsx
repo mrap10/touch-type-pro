@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react";
 import clsx from "clsx";
 import { RotateCcw } from "lucide-react";
 import type { TypingData } from "@/types/typing";
+import type { Difficulty } from "@/lib/TextGenerator";
 import { useTypingTest } from "@/hooks/useTypingTest";
 
 interface TypingAreaProps {
@@ -13,6 +14,7 @@ interface TypingAreaProps {
     setIsRunning: (running: boolean) => void;
     isFinished?: boolean;
     duration: number;
+    difficulty?: Difficulty;
     onTextUpdate?: (newText: string[]) => void;
     onProgress?: (progress: number, wpm: number, accuracy: number) => void;
     showRestart?: boolean;
@@ -25,7 +27,8 @@ export default function TypingArea({
     isActive, 
     setIsRunning, 
     isFinished, 
-    duration, 
+    duration,
+    difficulty,
     onTextUpdate,
     onProgress,
     showRestart = true,
@@ -36,6 +39,7 @@ export default function TypingArea({
         isActive,
         isFinished,
         duration,
+        difficulty,
         setIsRunning,
         onTextUpdate,
         onComplete,
@@ -130,7 +134,7 @@ export default function TypingArea({
             {showRestart && (
                 <button 
                     onClick={handleRestart}
-                    className="mt-8 p-3 bg-emerald-200 hover:bg-emerald-300 cursor-pointer text-black rounded-full transition-colors duration-200 flex items-center justify-center"
+                    className="mt-8 p-3 bg-emerald-500 hover:bg-emerald-600 cursor-pointer text-white dark:text-black rounded-full transition-colors duration-200 flex items-center justify-center"
                 >
                     <RotateCcw size={20} />
                 </button>

@@ -24,9 +24,9 @@ export default function Timer({ duration, isRunning, onDurationChange }: TimerPr
     };
 
     return (
-        <div className="text-lg flex justify-center items-center w-full px-4 mt-10 font-bold">
+        <div className="text-lg px-4 mt-10 font-bold">
             <div className="flex flex-col sm:flex-row gap-2 items-center sm:text-2xl text-xl">
-                Choose Time Limit:
+                Time:
                 <div className="flex gap-1">
                     {timeOptions.map((timeOption) => (
                         <button 

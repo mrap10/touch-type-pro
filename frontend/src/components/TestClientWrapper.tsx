@@ -5,9 +5,10 @@ import TypingArea from "./TypingArea";
 import ResultsCard from "./ResultsCard";
 import Timer from "./Timer";
 import CircularTimer from "./CircularTimer";
-import { generateRandomText } from "@/lib/TextGenerator";
+import { generateRandomText, type Difficulty } from "@/lib/TextGenerator";
 import { Time } from "./Timer";
 import ShareCard from "./ShareCard";
+import Mode from "./Mode";
 
 export default function TestClientWrapper() {
     const [text, setText] = useState<string[]>([]);
@@ -15,6 +16,7 @@ export default function TestClientWrapper() {
     const [isFinished, setIsFinished] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
     const [duration, setDuration] = useState<Time>(15);
+    const [difficulty, setDifficulty] = useState<Difficulty>('easy');
     const [timeLeft, setTimeLeft] = useState<number>(15);
     const [results, setResults] = useState<null | {
         wpm: number; 
@@ -24,8 +26,8 @@ export default function TestClientWrapper() {
      }>(null);
 
     useEffect(() => {
-        setText(generateRandomText(100));
-    }, []);
+        setText(generateRandomText(undefined, difficulty));
+    }, [difficulty]);
 
     useEffect(() => {
         setTimeLeft(duration);
@@ -58,9 +60,19 @@ export default function TestClientWrapper() {
             setIsFinished(false);
             setResults(null);
             setIsRunning(false);
-            setText(generateRandomText(100));
+            setText(generateRandomText(undefined, difficulty));
         }
     };
+
+    const handleModeChange = (newDifficulty: Difficulty) => {
+        if (!isRunning) {
+            setDifficulty(newDifficulty);
+            setIsFinished(false);
+            setResults(null);
+            setIsRunning(false);
+            setText(generateRandomText(undefined, newDifficulty));
+        }
+    }
 
     const handleComplete = useCallback((calculatedStats: {
         wpm: number;
@@ -74,7 +86,7 @@ export default function TestClientWrapper() {
     }, []);
 
     const handleRestart = () => {
-        setText(generateRandomText(100));
+        setText(generateRandomText(undefined, difficulty));
         setIsRunning(false);
         setIsFinished(false);
         setResults(null);
@@ -93,7 +105,15 @@ export default function TestClientWrapper() {
         <div className="max-h-screen flex flex-col">
             {!results && text.length > 0 && (
                 <>
-                    <div className="flex-shrink-0">
+                    <div className="flex-shrink-0 flex justify-around items-center">
+                        <div>
+                            <Mode
+                                difficulty={difficulty}
+                                onTimeUp={handleTimeUp}
+                                isRunning={isRunning}
+                                onModeChange={handleModeChange}
+                            />
+                        </div>
                         <Timer
                             duration={duration}
                             onTimeUp={handleTimeUp}
@@ -102,7 +122,7 @@ export default function TestClientWrapper() {
                         />
                     </div>
                     
-                    <div className="flex-shrink-0 mb-5">
+                    <div className="flex-shrink-0">
                         <CircularTimer 
                             timeLeft={timeLeft}
                             duration={duration}
@@ -117,9 +137,11 @@ export default function TestClientWrapper() {
                             setIsRunning={setIsRunning}
                             isFinished={isFinished}
                             duration={duration}
+                            difficulty={difficulty}
                             onTextUpdate={handleTextUpdate}
                         />
                     </div>
+
                 </>
             )}
 
@@ -130,7 +152,7 @@ export default function TestClientWrapper() {
             )}
 
             {results && (
-                <div className="flex-1 flex items-center justify-center">
+                <div className="flex-1 flex flex-col items-center justify-center">
                     <ResultsCard
                         wpm={results.wpm}
                         accuracy={results.accuracy}
@@ -140,6 +162,12 @@ export default function TestClientWrapper() {
                         onRestart={handleRestart}
                         onShare={handleShare}
                     />
+                    <div className="mt-10 flex items-center justify-center">
+                        <p className="font-mono text-gray-500 dark:text-gray-400">🛠️ We are working to improve your typing experience. If you encounter any bugs, please report them.</p>
+                        <button className="text-sm font-bold p-2 bg-emerald-500 text-white dark:text-black cursor-pointer rounded-lg ml-4 hover:bg-emerald-600 transition-colors duration-200">
+                            Report
+                        </button>
+                    </div>
                 </div>
             )}
 
