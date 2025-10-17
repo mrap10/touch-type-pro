@@ -164,8 +164,10 @@ export default function TestClientWrapper() {
                     />
                     <div className="mt-10 flex items-center justify-center">
                         <p className="font-mono text-gray-500 dark:text-gray-400">🛠️ We are working to improve your typing experience. If you encounter any bugs, please report them.</p>
-                        <button className="text-sm font-bold p-2 bg-emerald-500 text-white dark:text-black cursor-pointer rounded-lg ml-4 hover:bg-emerald-600 transition-colors duration-200">
-                            Report
+                        <button className="text-sm font-bold p-2 bg-emerald-500 text-white cursor-pointer rounded-lg ml-4 hover:bg-emerald-600 transition-colors duration-200">
+                            <a href="https://github.com/mrap10/touch-type-pro/issues/new?template=bug_report.md" target="_blank" rel="noopener noreferrer">
+                                Report
+                            </a>
                         </button>
                     </div>
                 </div>
