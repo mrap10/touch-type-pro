@@ -13,7 +13,7 @@ export const normalLessons: Lesson[] = [
         id: "lesson-1",
         title: "Home Row Basics",
         description: "Get comfortable with the foundation of typing: ASDF JKL;",
-        content: "asdf jkl; asdf jkl; aaa sss ddd fff jjj kkk lll ;;; asdf jkl; fdsa ;lkj",
+        content: "aaaa ssss dddd ffff jjjj kkkk llll ;;;; aass aass aass ssdd ssdd ddff ffgg ghgh hjhj gjgj jkjk klkl kkll llkj asdf jkl; asdf jkl; ask djf l;ajsd f;lkaj sd;flk ajsd; flkaj sd;fl kajsd f;",
         level: 1,
         focusKeys: ["A", "S", "D", "F", "J", "K", "L", ";"],
         category: "fundamentals"
