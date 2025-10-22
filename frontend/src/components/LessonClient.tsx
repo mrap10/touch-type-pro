@@ -135,6 +135,7 @@ export default function LessonClient({ lesson, mode }: LessonClientProps) {
                     text={lesson.content}
                     onComplete={handleTestComplete}
                     isActive={isTestActive}
+                    mode={mode}
                 />
             )}
 

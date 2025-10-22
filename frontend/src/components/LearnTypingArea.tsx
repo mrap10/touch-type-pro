@@ -3,23 +3,27 @@
 import React, { useState, useRef, useEffect } from "react";
 import clsx from "clsx";
 import type { TypingData } from "@/types/typing";
+import KeyboardBar from "./KeyboardBar";
 
 interface LearnTypingAreaProps {
     text: string;
     onComplete: (stats: { wpm: number; accuracy: number; errors: number; typingData: TypingData[] }) => void;
     isActive: boolean;
+    mode?: string;
 }
 
 export default function LearnTypingArea({ 
     text, 
     onComplete, 
     isActive,
+    mode = 'normal',
 }: LearnTypingAreaProps) {
     const [currentText, setCurrentText] = useState("");
     const [startTime, setStartTime] = useState<number | null>(null);
     const [errors, setErrors] = useState(0);
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const wrapperRef = useRef<HTMLDivElement>(null);
 
     const CHARS_PER_LINE = 60;
     const DISPLAY_CHARS = CHARS_PER_LINE * 2;
@@ -47,6 +51,13 @@ export default function LearnTypingArea({
     useEffect(() => {
         if (inputRef.current && isActive) {
             inputRef.current.focus();
+            
+            if (wrapperRef.current) {
+                wrapperRef.current.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }
         }
     }, [isActive]);
 
@@ -93,11 +104,11 @@ export default function LearnTypingArea({
     };
 
     return (
-        <div className="">
+        <div ref={wrapperRef} className="scroll-mt-4">
             <div 
                 ref={containerRef}
                 onClick={handleContainerClick}
-                className="px-6 py-8 min-h-[200px] flex items-center justify-center cursor-default bg-white dark:bg-gray-900 rounded-lg mb-6"
+                className="px-6 py-8 min-h-[200px] flex items-center justify-center cursor-text bg-white dark:bg-gray-900 rounded-lg mb-6 shadow-lg"
             >
                 <input 
                     ref={inputRef}
@@ -138,50 +149,7 @@ export default function LearnTypingArea({
                 </div>
             </div>
 
-            <KeyboardBar nextKey={nextChar} />
-        </div>
-    );
-}
-
-const KEYBOARD_LAYOUT = [
-    ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
-    ["a", "s", "d", "f", "j", "k", "l", ";"],
-    ["z", "x", "c", "v", "b", "n", "m"],
-    [" "],
-];
-
-interface KeyboardBarProps {
-    nextKey: string;
-}
-
-function KeyboardBar({ nextKey }: KeyboardBarProps) {
-    const normalizedNextKey = nextKey.toLowerCase();
-
-    return (
-        <div className="mt-8 p-3 w-fit place-self-center bg-gray-200/50 dark:bg-gray-800/50 rounded-lg backdrop-blur-sm">
-            <div className="flex flex-col gap-1.5 justify-center font-mono text-gray-600 dark:text-gray-400">
-                {KEYBOARD_LAYOUT.map((row, rowIndex) => (
-                    <div key={row.join("-")} className="flex gap-1.5 justify-center">
-                        {row.map((key) => {
-                            const isNext = normalizedNextKey === key;
-                            const isSpacebar = key === " ";
-
-                            return (
-                                <div
-                                    key={key + rowIndex}
-                                    className={clsx(
-                                        "h-12 flex items-center justify-center rounded-md bg-white dark:bg-gray-700 transition-all duration-100 ease-in-out",
-                                        isSpacebar ? "w-full px-20" : "w-12",
-                                        isNext && "transform -translate-y-0.5 scale-105 bg-emerald-500 dark:text-white shadow-[0_0_20px_#10b981]"
-                                    )}
-                                >
-                                    {isSpacebar ? "Space" : key}
-                                </div>
-                            );
-                        })}
-                    </div>
-                ))}
-            </div>
+            <KeyboardBar nextKey={nextChar} mode={mode} />
         </div>
     );
 }
