@@ -9,7 +9,7 @@ export default function NotFound() {
                 <div className="text-center">
                     <h1 className="text-2xl font-bold mb-4">Lesson not found</h1>
                     <p className="text-gray-600 dark:text-gray-400 mb-6">
-                        The lesson you're looking for doesn't exist.
+                        The lesson you&lsquo;re looking for doesn&lsquo;t exist.
                     </p>
                     <Link
                         href="/learn"

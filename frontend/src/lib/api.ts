@@ -1,10 +1,10 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 interface ApiResponse<T> {
     success: boolean;
     data: T;
     message?: string;
-    stats?: any;
+    stats?: UserStats;
 }
 
 interface LessonProgress {
@@ -24,6 +24,15 @@ interface UserStats {
     averageWpm: number;
     totalStars: number;
     completedLessons: number;
+}
+
+interface UserProfile {
+    id: string;
+    username: string;
+    email: string;
+    createdAt: string;
+    lastLogin: string;
+    progress: LessonProgress[];
 }
 
 const getAuthToken = (): string | null => {
@@ -56,10 +65,37 @@ async function apiCall<T>(
     const data = await response.json();
 
     if (!response.ok) {
-        throw new Error(data.message || 'API call failed');
+        const errorMessage = data.error || data.message || 'API call failed';
+        
+        if (data.details && Array.isArray(data.details) && data.details.length > 0) {
+            const detailMessages = data.details.map((d: { message: string }) => d.message).join(', ');
+            throw new Error(detailMessages || errorMessage);
+        }
+        
+        throw new Error(errorMessage);
     }
 
     return data;
+}
+
+export const authAPI = {
+    signUp: async (username: string, email: string, password: string) => {
+        return apiCall<{ token: string }>('/auth/signup', {
+            method: 'POST',
+            body: JSON.stringify({ username, email, password }),
+        });
+    },
+
+    signIn: async (email: string, password: string) => {
+        return apiCall<{ token: string }>('/auth/signin', {
+            method: 'POST',
+            body: JSON.stringify({ email, password }),
+        });
+    },
+
+    getUserProfile: async () => {
+        return apiCall<UserProfile>('/auth/profile');
+    }
 }
 
 export const learnAPI = {
@@ -85,7 +121,7 @@ export const learnAPI = {
         focusKeys?: string[];
         star: number;
         mode: 'NORMAL' | 'DEV';
-        errorPatterns?: any;
+        errorPatterns?: string[];
     }) => {
         return apiCall<LessonProgress>('/learn/progress', {
             method: 'POST',

@@ -97,10 +97,10 @@ export const signInController = asyncHandler(async (req: Request, res: Response,
 });
 
 export const getUserProfile = asyncHandler(async (req: AuthRequest, res: Response, next: NextFunction) => {
-    const { userId } = req.params;
+    const userId = req.user?.id;
 
-    if (req.user?.id !== userId) {
-        throw new AppError("Unauthorized to view this profile", 403);
+    if (!userId) {
+        throw new AppError("User not authenticated", 401);
     }
 
     const user = await prisma.user.findUnique({

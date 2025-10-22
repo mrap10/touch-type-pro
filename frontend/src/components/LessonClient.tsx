@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import LearnTypingArea from "@/components/LearnTypingArea";
 import LessonResultCard from "@/components/LessonResultCard";
 import { learnAPI, isAuthenticated } from "@/lib/api";
+import { getLessonsByMode } from "@/app/learn/data/lessons";
 import type { TypingData } from "@/types/typing";
 
 interface LessonClientProps {
@@ -49,7 +50,7 @@ export default function LessonClient({ lesson, mode }: LessonClientProps) {
 
     const handleSaveProgress = async () => {
         if (!isAuthenticated()) {
-            alert("Please sign in to save your progress!\n\n(Sign-in component will be implemented)");
+            router.push('/signin');
             return;
         }
 
@@ -74,14 +75,16 @@ export default function LessonClient({ lesson, mode }: LessonClientProps) {
                 mode: modeType as 'NORMAL' | 'DEV',
             });
 
-            setSavedMessage("Progress saved successfully! ✅");
+            setSavedMessage("Progress saved successfully!");
             setTimeout(() => setSavedMessage(""), 3000);
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : "Failed to save progress. Please try again.";
             console.error('Failed to save progress:', error);
-            if (error.message.includes('401') || error.message.includes('authenticated')) {
-                alert("Please sign in to save your progress!\n\n(Sign-in component will be implemented)");
+            if (errorMessage.includes('401') || errorMessage.includes('authenticated')) {
+                router.push('/signin');
             } else {
-                alert("Failed to save progress. Please try again.");
+                setSavedMessage(errorMessage);
+                setTimeout(() => setSavedMessage(""), 3000);
             }
         } finally {
             setIsSaving(false);
@@ -96,6 +99,18 @@ export default function LessonClient({ lesson, mode }: LessonClientProps) {
     const handleRestart = () => {
         setTestResults(null);
         setIsTestActive(true);
+    };
+
+    const handleNextLesson = () => {
+        const lessons = getLessonsByMode(mode);
+        const currentIndex = lessons.findIndex(l => l.id === lesson.id);
+        
+        if (currentIndex !== -1 && currentIndex < lessons.length - 1) {
+            const nextLesson = lessons[currentIndex + 1];
+            router.push(`/learn/${mode}/${nextLesson.id}`);
+        } else {
+            router.push(`/learn/${mode}`);
+        }
     };
 
     return (
@@ -127,13 +142,12 @@ export default function LessonClient({ lesson, mode }: LessonClientProps) {
                 <LessonResultCard
                     wpm={testResults.wpm}
                     accuracy={testResults.accuracy}
-                    errors={testResults.errors}
                     stars={calculateStars(testResults.accuracy, testResults.wpm)}
                     isSaving={isSaving}
                     savedMessage={savedMessage}
                     onSaveProgress={handleSaveProgress}
                     onRestart={handleRestart}
-                    onBackToLessons={() => router.push(`/learn/${mode}`)}
+                    onNextLesson={handleNextLesson}
                 />
             )}
         </div>

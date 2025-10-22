@@ -1,25 +1,23 @@
 interface LessonResultCardProps {
     wpm: number;
     accuracy: number;
-    errors: number;
     stars: number;
     isSaving: boolean;
     savedMessage: string;
     onSaveProgress: () => void;
     onRestart: () => void;
-    onBackToLessons: () => void;
+    onNextLesson: () => void;
 }
 
 export default function LessonResultCard({
     wpm,
     accuracy,
-    errors,
     stars,
     isSaving,
     savedMessage,
     onSaveProgress,
     onRestart,
-    onBackToLessons,
+    onNextLesson,
 }: LessonResultCardProps) {
     return (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-20">
@@ -81,10 +79,10 @@ export default function LessonResultCard({
                         {isSaving ? 'Saving...' : 'Save Progress'}
                     </button>
                     <button
-                        onClick={onBackToLessons}
+                        onClick={onNextLesson}
                         className="col-span-2 bg-emerald-500 hover:bg-emerald-600 text-white cursor-pointer font-bold py-3 px-4 rounded-lg transition-colors"
                     >
-                        Back to Lessons →
+                        Next Lesson →
                     </button>
                 </div>
             </div>

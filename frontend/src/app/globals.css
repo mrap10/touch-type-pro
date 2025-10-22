@@ -1,3 +1,17 @@
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+@layer utilities {
+  input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0px 1000px white inset !important;
+    -webkit-text-fill-color: #111827 !important; /* text-gray-900 */
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  .dark input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0px 1000px #374151 inset !important; /* bg-gray-700 */
+    -webkit-text-fill-color: #d1d5db !important; /* text-gray-300 */
+    transition: background-color 5000s ease-in-out 0s;
+  }
+}

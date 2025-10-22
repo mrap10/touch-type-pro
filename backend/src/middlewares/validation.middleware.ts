@@ -3,18 +3,36 @@ import { z, ZodType } from "zod";
 
 export const validate = (schema: ZodType) => {
     return (req: Request, res: Response, next: NextFunction) => {
-        try {
-            schema.parse({
+        try {            
+            const dataToValidate = {
                 body: req.body,
                 query: req.query,
                 params: req.params
-            });
+            };            
+            const result = schema.parse(dataToValidate) as any;
+
+            // schema already nests reqs, so we need to extract them
+            req.body = result.body || req.body;
+            req.query = result.query || req.query;
+            req.params = result.params || req.params;
+            
             next();
-        } catch (error: any) {
+        } catch (error: any) {            
+            const zodIssues = error.issues || error.errors || [];     
+
+            const formattedErrors = zodIssues.map((err: any) => ({
+                field: err.path.join('.'),
+                message: err.message
+            }));
+            
+            const errorMessage = formattedErrors.length > 0 
+                ? `Validation failed: ${formattedErrors.map((e: any) => e.message).join(', ')}`
+                : "Validation failed";
+            
             return res.status(400).json({
                 success: false,
-                error: "Validation failed",
-                details: error.errors
+                error: errorMessage,
+                details: formattedErrors
             });
         }
     };

@@ -4,9 +4,7 @@ import Navbar from "@/components/Navbar";
 import LessonClient from "@/components/LessonClient";
 import Link from "next/link";
 
-export default async function LessonPage({ params }: { params: { mode: string; lessonId: string } }) {
-    // const mode = params.mode || 'normal';
-    // const lessonId = params.lessonId || '';
+export default async function LessonPage({ params }: { params: Promise<{ mode: string; lessonId: string }> }) {
     const { mode, lessonId } = await params;
 
     const lesson = getLessonById(lessonId, mode);
