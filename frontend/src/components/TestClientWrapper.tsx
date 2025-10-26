@@ -162,14 +162,11 @@ export default function TestClientWrapper() {
                         onRestart={handleRestart}
                         onShare={handleShare}
                     />
-                    <div className="mt-10 flex items-center justify-center">
-                        <p className="font-mono text-gray-500 dark:text-gray-400">🛠️ We are working to improve your typing experience. If you encounter any bugs, please report them.</p>
-                        <button className="text-sm font-bold p-2 bg-emerald-500 text-white cursor-pointer rounded-lg ml-4 hover:bg-emerald-600 transition-colors duration-200">
-                            <a href="https://github.com/mrap10/touch-type-pro/issues/new?template=bug_report.md" target="_blank" rel="noopener noreferrer">
-                                Report
-                            </a>
-                        </button>
-                    </div>
+                    <button className="p-2 mr-20 mt-10 text-sm font-semibold bg-emerald-500 text-gray-100 dark:text-black cursor-pointer place-self-end rounded-lg ml-4 hover:bg-emerald-600 transition-colors duration-200">
+                        <a href="https://github.com/mrap10/touch-type-pro/issues/new?template=bug_report.md" target="_blank" rel="noopener noreferrer">
+                            Report a Bug
+                        </a>
+                    </button>
                 </div>
             )}
 

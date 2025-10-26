@@ -42,9 +42,9 @@ export default function LessonClient({ lesson, mode }: LessonClientProps) {
     };
 
     const calculateStars = (accuracy: number, wpm: number): number => {
-        if (accuracy < 85) return 0;
+        if (accuracy < 80) return 0;
         if (accuracy >= 95 && wpm >= 40) return 3;
-        if (accuracy >= 90 && wpm >= 30) return 2;
+        if (accuracy >= 80 && wpm >= 30) return 2;
         return 1;
     };
 
