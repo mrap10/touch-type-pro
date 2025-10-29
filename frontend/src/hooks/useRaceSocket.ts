@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
-import { RaceProgressData, UserEventData, RaceCompletedData, RaceSocketCallbacks } from "@/types/race";
+import { RaceProgressData, UserEventData, RaceCompletedData, RaceSocketCallbacks, LeaderboardUpdateData } from "@/types/race";
 import { SocketEvent } from "@/types/socket-events";
 
 const PROGRESS_THROTTLE_MS = 250;
@@ -15,7 +15,7 @@ export default function useRaceSocket(
     const lastProgressSent = useRef<number>(0);
     const progressThrottleRef = useRef<NodeJS.Timeout | null>(null);
     
-    const { onProgressUpdate, onUserJoined, onUserLeft, onRaceCompleted, onRoomJoined, onRaceStarted, onCountdownStarted, onCountdownTick, onCountdownCancelled, onRaceReset, onCountdownRejected, onRematchRequested, onRematchAccepted, onRematchDeclined, onJoinError } = callbacks;
+    const { onProgressUpdate, onUserJoined, onUserLeft, onRaceCompleted, onLeaderboardUpdate, onRoomJoined, onRaceStarted, onCountdownStarted, onCountdownTick, onCountdownCancelled, onRaceReset, onCountdownRejected, onRematchRequested, onRematchAccepted, onRematchDeclined, onJoinError } = callbacks;
 
     useEffect(() => {
         if (!socketRef.current) {
@@ -50,7 +50,12 @@ export default function useRaceSocket(
                 onRaceCompleted?.(data);
             });
 
+            socket.on(SocketEvent.LEADERBOARD_UPDATE, (data: LeaderboardUpdateData) => {
+                onLeaderboardUpdate?.(data);
+            });
+
             socket.on(SocketEvent.ROOM_JOINED, (data: { roomId: string; text: string[]; userCount: number; isStarted: boolean; existingUsers?: string[] }) => {
+                roomIdRef.current = data.roomId;
                 onRoomJoined?.(data);
             });
 
@@ -94,6 +99,7 @@ export default function useRaceSocket(
             });
 
             socket.on("room_joined", (data: { roomId: string; text: string[]; userCount: number; isStarted: boolean; existingUsers?: string[] }) => {
+                roomIdRef.current = data.roomId;
                 onRoomJoined?.(data);
             });
 
@@ -134,7 +140,7 @@ export default function useRaceSocket(
                 clearTimeout(progressThrottleRef.current);
             }
         };
-    }, [onProgressUpdate, onUserJoined, onUserLeft, onRaceCompleted, onRaceStarted, onRoomJoined, onCountdownStarted, onCountdownTick, onCountdownCancelled, onRaceReset, onCountdownRejected, onRematchRequested, onRematchAccepted, onRematchDeclined, onJoinError]);
+    }, [onProgressUpdate, onUserJoined, onUserLeft, onRaceCompleted, onLeaderboardUpdate, onRaceStarted, onRoomJoined, onCountdownStarted, onCountdownTick, onCountdownCancelled, onRaceReset, onCountdownRejected, onRematchRequested, onRematchAccepted, onRematchDeclined, onJoinError]);
 
     useEffect(() => {
         if (!roomId || !socketRef.current) return;
@@ -166,7 +172,7 @@ export default function useRaceSocket(
         const shouldSendImmediately = !last || now - last >= PROGRESS_THROTTLE_MS || isCompletion;
 
         if (shouldSendImmediately) {
-            console.log("Throttle-send progress update (immediate):", { roomId: roomIdRef.current, progress });
+            // console.log("Throttle-send progress update (immediate):", { roomId: roomIdRef.current, progress });
             socketRef.current.emit(SocketEvent.PROGRESS_UPDATE, {
                 roomId: roomIdRef.current,
                 progress
@@ -181,7 +187,7 @@ export default function useRaceSocket(
             if (progressThrottleRef.current) clearTimeout(progressThrottleRef.current);
             progressThrottleRef.current = setTimeout(() => {
                 if (!socketRef.current || !roomIdRef.current) return;
-                console.log("Throttle-send progress update (trailing):", { roomId: roomIdRef.current, progress });
+                // console.log("Throttle-send progress update (trailing):", { roomId: roomIdRef.current, progress });
                 socketRef.current.emit(SocketEvent.PROGRESS_UPDATE, {
                     roomId: roomIdRef.current,
                     progress
@@ -233,8 +239,6 @@ export default function useRaceSocket(
             socketRef.current.emit(SocketEvent.LEAVE_RACE, roomIdRef.current);
         }
 
-        roomIdRef.current = roomId;
-        socketRef.current.emit(SocketEvent.JOIN_RACE, roomId);
         socketRef.current.emit(SocketEvent.JOIN_RACE, { roomId, username });
     }, []);
 

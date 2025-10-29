@@ -23,6 +23,7 @@ export enum SocketEvent {
   USER_LEFT = 'user_left',
   PROGRESS_BROADCAST = 'progress_broadcast',
   RACE_COMPLETED = 'race_completed',
+  LEADERBOARD_UPDATE = 'leaderboard_update',
   RACE_STARTED = 'race_started',
   COUNTDOWN_STARTED = 'countdown_started',
   COUNTDOWN_TICK = 'countdown_tick',

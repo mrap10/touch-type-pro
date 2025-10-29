@@ -4,12 +4,23 @@ import { SocketEvent, ClientToServerEvents, ServerToClientEvents, SocketData } f
 const HEARTBEAT_INTERVAL = 25000; // ping every 25 seconds
 const HEARTBEAT_TIMEOUT = 35000;
 
+interface RaceResult {
+    playerId: string;
+    wpm: number;
+    accuracy: number;
+    errors: number;
+    finishTime: number;
+    position: number;
+    username?: string;
+}
+
 const roomData = new Map<string, {
     text: string[];
     users: Set<string>;
     usernames: Map<string, string>;
     isStarted: boolean;
     startTime?: number;
+    results: Map<string, RaceResult>;
     countdown?: {
         endsAt: number;
         duration: number;
@@ -31,6 +42,20 @@ function generateRaceText(): string[] {
     
     const shuffled = words.sort(() => Math.random() - 0.5);
     return shuffled.slice(0, 30);
+}
+
+function computeLeaderboard(results: Map<string, RaceResult>): RaceResult[] {
+    const sortedResults = Array.from(results.values()).sort((a, b) => {
+        if (b.wpm !== a.wpm) return b.wpm - a.wpm;
+        return a.finishTime - b.finishTime;
+    });
+    
+    sortedResults.forEach((result, index) => {
+        result.position = index + 1;
+        results.set(result.playerId, result);
+    });
+    
+    return sortedResults;
 }
 
 export function setupSocketHandlers(io: Server<ClientToServerEvents, ServerToClientEvents, {}, SocketData>) {
@@ -70,7 +95,8 @@ export function setupSocketHandlers(io: Server<ClientToServerEvents, ServerToCli
                     text: generateRaceText(),
                     users: new Set(),
                     usernames: new Map(),
-                    isStarted: false
+                    isStarted: false,
+                    results: new Map()
                 });
             }
 
@@ -116,8 +142,17 @@ export function setupSocketHandlers(io: Server<ClientToServerEvents, ServerToCli
                 return;
             }
 
-            socket.join(roomId);
             const room = roomData.get(roomId)!;
+
+            if (room.isStarted) {
+                socket.emit(SocketEvent.JOIN_ERROR, { 
+                    roomId, 
+                    message: 'Race is currently in progress. Please wait for it to finish (estimated: ~45 seconds) and try again.' 
+                });
+                return;
+            }
+
+            socket.join(roomId);
             const existingUsers = Array.from(room.users);
             room.users.add(socket.id);
             if (username) {
@@ -170,17 +205,27 @@ export function setupSocketHandlers(io: Server<ClientToServerEvents, ServerToCli
             finishTime: number;
         }) => {
             const room = roomData.get(roomId);
+            if (!room) return;
+            
             let authoritativeFinishTime = finishTime;
-            if (room?.startTime) {
+            if (room.startTime) {
                 authoritativeFinishTime = Date.now() - room.startTime;
             }
-            socket.to(roomId).emit(SocketEvent.RACE_COMPLETED, {
+            
+            const result: RaceResult = {
                 playerId: socket.id,
                 wpm,
                 accuracy,
                 errors,
-                finishTime: authoritativeFinishTime
-            });
+                finishTime: authoritativeFinishTime,
+                position: 0,
+                username: room.usernames.get(socket.id)
+            };
+            room.results.set(socket.id, result);
+            
+            const leaderboard = computeLeaderboard(room.results);
+            
+            io.to(roomId).emit(SocketEvent.LEADERBOARD_UPDATE, { leaderboard });
         });
 
         socket.on(SocketEvent.START_RACE, (roomId: string) => {
@@ -256,6 +301,7 @@ export function setupSocketHandlers(io: Server<ClientToServerEvents, ServerToCli
             room.isStarted = false;
             room.startTime = undefined;
             room.text = generateRaceText();
+            room.results.clear();
             io.to(roomId).emit(SocketEvent.RACE_RESET, { roomId, text: room.text });
         });
 

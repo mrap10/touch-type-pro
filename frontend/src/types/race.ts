@@ -37,11 +37,26 @@ export interface RaceCompletedData {
     finishTime: number;
 }
 
+export interface LeaderboardEntry {
+    playerId: string;
+    wpm: number;
+    accuracy: number;
+    errors: number;
+    finishTime: number;
+    position: number;
+    username?: string;
+}
+
+export interface LeaderboardUpdateData {
+    leaderboard: LeaderboardEntry[];
+}
+
 export interface RaceSocketCallbacks {
     onProgressUpdate?: (data: RaceProgressData) => void;
     onUserJoined?: (data: UserEventData & { userCount: number }) => void;
     onUserLeft?: (data: UserEventData & { userCount: number }) => void;
     onRaceCompleted?: (data: RaceCompletedData) => void;
+    onLeaderboardUpdate?: (data: LeaderboardUpdateData) => void;
     onRoomJoined?: (data: { roomId: string; text: string[]; userCount: number; isStarted: boolean; existingUsers?: string[] }) => void;
     onRaceStarted?: (data: { message: string; text: string[]; startTime: number }) => void;
     onCountdownStarted?: (data: { duration: number; initiator: string; endsAt: number }) => void;

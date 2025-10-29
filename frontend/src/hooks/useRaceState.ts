@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Opponent, RaceStats, RaceCompletedData } from "@/types/race";
+import { Opponent, RaceStats, RaceCompletedData, LeaderboardEntry } from "@/types/race";
 
 export interface PlayerResult extends RaceCompletedData {
     position: number;
@@ -40,7 +40,6 @@ export default function useRaceState() {
     const joinRoom = useCallback((roomId: string) => {
         setCurrentRoomId(roomId);
         setIsCreatingRoom(false);
-        setIsInRace(true);
     }, []);
 
     const startRace = useCallback(() => {
@@ -186,6 +185,7 @@ export default function useRaceState() {
         setRaceText(data.text);
         setIsRaceStarted(data.isStarted);
         setServerUserCount(data.userCount);
+        setIsInRace(true);
 
         if (data.existingUsers && data.existingUsers.length > 0) {
             setOpponents(prev => {
@@ -229,6 +229,19 @@ export default function useRaceState() {
             return newResults;
         });
     }, [recomputePositions]);
+
+    const handleLeaderboardUpdate = useCallback((leaderboard: LeaderboardEntry[]) => {
+        const newResults = new Map<string, PlayerResult>();
+        leaderboard.forEach(entry => {
+            newResults.set(entry.playerId, entry);
+        });
+        setRaceResults(newResults);
+        
+        const myResult = leaderboard.find(entry => entry.playerId === currentPlayerId);
+        if (myResult) {
+            setCurrentPlayerResult(myResult);
+        }
+    }, [currentPlayerId]);
 
     const updateLocalUsername = useCallback((name: string) => {
         setUsername(name);
@@ -275,6 +288,7 @@ export default function useRaceState() {
         handleRoomJoined,
         handleRaceStarted,
         handlePlayerFinished,
+        handleLeaderboardUpdate,
         setCurrentPlayerId,
         prepareRematch,
         

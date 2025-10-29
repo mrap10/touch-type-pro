@@ -110,7 +110,27 @@ export default function RaceControls({ onCreateRoom, onJoinRoom, error, onClearE
                 </div>
 
                 {error && (
-                    <div className="mt-4 text-red-600 text-center">{error}</div>
+                    <div className="mt-4 p-4 bg-emerald-50 dark:bg-emerald-900/20 border-2 border-emerald-400 dark:border-emerald-600 rounded-lg">
+                        <div className="flex-1">
+                            <p className="font-semibold text-center text-emerald-800 dark:text-emerald-200 mb-1">
+                                {error.includes('in progress') ? 'Race In Progress' : 'Unable to Join'}
+                            </p>
+                            <p className="text-sm text-justify text-emerald-700 dark:text-emerald-300">
+                                {error}
+                            </p>
+                            {error.includes('in progress') && (
+                                <button
+                                    onClick={() => {
+                                        onClearError?.();
+                                        handleJoinRoom();
+                                    }}
+                                    className="mt-3 text-sm bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                                >
+                                    Try Again
+                                </button>
+                            )}
+                        </div>
+                    </div>
                 )}
             </div>
 

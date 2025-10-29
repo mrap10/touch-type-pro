@@ -43,6 +43,7 @@ export default function RacePage() {
         handleRoomJoined,
         handleRaceStarted,
         handlePlayerFinished,
+        handleLeaderboardUpdate,
         setCurrentPlayerId,
         currentPlayerId,
         username,
@@ -61,6 +62,9 @@ export default function RacePage() {
             onUserJoined: addUser,
             onUserLeft: removeUser,
             onRaceCompleted: handlePlayerFinished,
+            onLeaderboardUpdate: (data) => {
+                handleLeaderboardUpdate(data.leaderboard);
+            },
             onRoomJoined: handleRoomJoined,
             onRaceStarted: (data) => {
                 setCountdownRemaining(null);
@@ -115,7 +119,7 @@ export default function RacePage() {
 
     useEffect(() => {
         if (currentRoomId && isConnected) {
-            console.log("Room ID changed:", { currentRoomId, isCreatingRoom });
+            // console.log("Room ID changed:", { currentRoomId, isCreatingRoom });
             if (isCreatingRoom) {
                 createRace(currentRoomId, username);
             } else {
@@ -281,20 +285,30 @@ export default function RacePage() {
                 )}
 
                 {isRaceFinished && (
-                    <RaceResults
-                        isFinished={isRaceFinished}
-                        raceResults={raceResults}
-                        currentPlayerResult={currentPlayerResult}
-                        onRematch={() => {
-                            setNotification("Preparing new race...");
-                            setCountdownRemaining(null);
-                            setCountdownInitiator(null);
-                            setIsCountdownPending(false);
-                            resetRace();
-                        }}
-                        onShare={handleShare}
-                        usernamesMap={usernamesMap}
-                    />
+                    <>
+                        {raceResults.size < playerCount && (
+                            <div className="mt-10 mb-4 p-4 bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-300 dark:border-emerald-700 rounded-lg text-emerald-800 dark:text-emerald-200 text-center">
+                                <p className="text-lg font-semibold">
+                                    ⏳ Waiting for other players to finish... ({raceResults.size}/{playerCount} completed)
+                                </p>
+                            </div>
+                        )}
+                        
+                        <RaceResults
+                            isFinished={isRaceFinished}
+                            raceResults={raceResults}
+                            currentPlayerResult={currentPlayerResult}
+                            onRematch={() => {
+                                setNotification("Preparing new race...");
+                                setCountdownRemaining(null);
+                                setCountdownInitiator(null);
+                                setIsCountdownPending(false);
+                                resetRace();
+                            }}
+                            onShare={handleShare}
+                            usernamesMap={usernamesMap}
+                        />
+                    </>
                 )}
 
                 {isShareOpen && currentPlayerResult && (
