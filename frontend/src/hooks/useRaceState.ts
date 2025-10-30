@@ -88,17 +88,6 @@ export default function useRaceState() {
         setAccuracy(currentAccuracy);
     }, []);
 
-    const recomputePositions = useCallback((results: Map<string, PlayerResult>) => {
-        const arr = Array.from(results.values());
-        arr.sort((a, b) => {
-            if (b.wpm !== a.wpm) return b.wpm - a.wpm;
-            return a.finishTime - b.finishTime;
-        });
-        arr.forEach((r, idx) => {
-            results.set(r.playerId, { ...r, position: idx + 1 });
-        });
-    }, []);
-
     const completeRace = useCallback((stats: RaceStats) => {
         setIsRaceFinished(true);
         setWpm(stats.wpm);
@@ -117,10 +106,9 @@ export default function useRaceState() {
         setRaceResults(prev => {
             const newResults = new Map(prev);
             newResults.set(currentPlayerId, currentResult);
-            recomputePositions(newResults);
             return newResults;
         });
-    }, [raceStartTime, currentPlayerId, recomputePositions]);
+    }, [raceStartTime, currentPlayerId]);
 
     const updateOpponentProgress = useCallback((data: { playerId: string; progress: number; username?: string }) => {
         // console.log("Updating opponent progress:", data);
@@ -225,10 +213,9 @@ export default function useRaceState() {
             const newResults = new Map(prev);
             const playerResult: PlayerResult = { ...data, position: 0 };
             newResults.set(data.playerId, playerResult);
-            recomputePositions(newResults);
             return newResults;
         });
-    }, [recomputePositions]);
+    }, []);
 
     const handleLeaderboardUpdate = useCallback((leaderboard: LeaderboardEntry[]) => {
         const newResults = new Map<string, PlayerResult>();

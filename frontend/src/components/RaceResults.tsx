@@ -97,7 +97,8 @@ export default function RaceResults({
             <div className="space-y-6 px-4 md:px-10">
                 {sortedResults.map((result, index) => {
                     const isPlayerCurrent = isCurrentPlayer(result.playerId);
-                    const borderClass = result.position === 1 
+                    const position = result.position > 0 ? result.position : index + 1;
+                    const borderClass = position === 1 
                         ? 'border-2 border-emerald-300 dark:border-emerald-700' 
                         : 'border border-gray-300 dark:border-gray-700';
                     
@@ -108,7 +109,7 @@ export default function RaceResults({
                         >
                             <div className="flex flex-col items-center space-y-2">
                                 <h1 className="text-4xl font-bold">
-                                    {result.position}{getPositionSuffix(result.position)}
+                                    {position}{getPositionSuffix(position)}
                                 </h1>
                                 <div className={`rounded-full w-16 h-16 flex items-center justify-center text-white ${isPlayerCurrent ? 'bg-blue-500' : 'bg-emerald-500'}`}>
                                     <h1 className="font-bold text-3xl">
@@ -117,7 +118,7 @@ export default function RaceResults({
                                 </div>
                                 <p className={`font-semibold text-xl ${isPlayerCurrent ? 'text-blue-500' : 'text-emerald-500'}`}>
                                     {getPlayerName(result.playerId)}
-                                    {result.position === 1 && ' 🏆'}
+                                    {position === 1 && ' 🏆'}
                                 </p>
                             </div>
                             

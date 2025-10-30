@@ -79,7 +79,7 @@ export default function KeyboardBar({ nextKey, mode = 'normal' }: KeyboardBarPro
 
     if (isDevMode) {
         return (
-            <div className="mt-8 p-3 w-fit place-self-center bg-gray-200/50 dark:bg-gray-800/50 rounded-lg backdrop-blur-sm">
+            <div className="mt-8 p-3 w-md sm:w-fit place-self-center bg-gray-200/50 dark:bg-gray-800/50 rounded-lg backdrop-blur-sm">
                 <div className="flex flex-col gap-1.5 justify-center font-mono text-gray-600 dark:text-gray-400">
                     {DEV_KEYBOARD_LAYOUT.map((row, rowIndex) => (
                         <div key={rowIndex} className="flex gap-1.5 justify-center">
@@ -119,7 +119,7 @@ export default function KeyboardBar({ nextKey, mode = 'normal' }: KeyboardBarPro
     }
 
     return (
-        <div className="mt-8 p-3 w-fit place-self-center bg-gray-200/50 dark:bg-gray-800/50 rounded-lg backdrop-blur-sm">
+        <div className="mt-8 p-3 w-sm sm:w-fit place-self-center bg-gray-200/50 dark:bg-gray-800/50 rounded-lg backdrop-blur-sm">
             <div className="flex flex-col gap-1.5 justify-center font-mono text-gray-600 dark:text-gray-400">
                 {KEYBOARD_LAYOUT.map((row, rowIndex) => (
                     <div key={row.join("-")} className="flex gap-1.5 justify-center">

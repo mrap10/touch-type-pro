@@ -22,14 +22,16 @@ export default function Navbar() {
     ];
 
     const getNavLinkClassName = (href: string) => {
-        const isActive = pathname === href;
+        const isActive = href === "/learn" 
+            ? pathname.startsWith("/learn")
+            : pathname === href;
         const baseClasses = "sm:mr-2 px-2 py-1 hover:text-emerald-500 focus:outline-none rounded-lg transition-colors";
         
         if (isActive) {
-            return `${baseClasses} text-emerald-600 font-bold`;
+            return `${baseClasses} text-emerald-500 font-bold`;
         }
         
-        return `${baseClasses} focus:text-emerald-800 dark:focus:text-emerald-400`;
+        return `${baseClasses} focus:text-emerald-800 dark:focus:text-emerald-500`;
     };
 
     useEffect(() => {

@@ -89,50 +89,6 @@ export default function useRaceSocket(
             socket.on(SocketEvent.JOIN_ERROR, (data: { roomId: string; message: string }) => {
                 onJoinError?.(data);
             });
-
-            socket.on("user_left", (data: UserEventData & { userCount: number }) => {
-                onUserLeft?.(data);
-            });
-
-            socket.on("race_completed", (data: RaceCompletedData) => {
-                onRaceCompleted?.(data);
-            });
-
-            socket.on("room_joined", (data: { roomId: string; text: string[]; userCount: number; isStarted: boolean; existingUsers?: string[] }) => {
-                roomIdRef.current = data.roomId;
-                onRoomJoined?.(data);
-            });
-
-            socket.on("race_started", (data: { message: string; text: string[]; startTime: number }) => {
-                onRaceStarted?.(data);
-            });
-            socket.on("countdown_started", (data: { duration: number; initiator: string; endsAt: number }) => {
-                onCountdownStarted?.(data);
-            });
-            socket.on("countdown_tick", (data: { remaining: number }) => {
-                onCountdownTick?.(data);
-            });
-            socket.on("countdown_cancelled", (data: { by: string }) => {
-                onCountdownCancelled?.(data);
-            });
-            socket.on("race_reset", (data: { roomId: string; text: string[] }) => {
-                onRaceReset?.(data);
-            });
-            socket.on("countdown_rejected", (data: { reason: string }) => {
-                onCountdownRejected?.(data);
-            });
-            socket.on("rematch_requested", (data: { requesterId: string; requesterName: string }) => {
-                onRematchRequested?.(data);
-            });
-            socket.on("rematch_accepted", (data: { accepterId: string; accepterName: string }) => {
-                onRematchAccepted?.(data);
-            });
-            socket.on("rematch_declined", (data: { declinerId: string; declinerName: string }) => {
-                onRematchDeclined?.(data);
-            });
-            socket.on("join_error", (data: { roomId: string; message: string }) => {
-                onJoinError?.(data);
-            });
         }
 
         return () => {
@@ -272,7 +228,7 @@ export default function useRaceSocket(
     const leaveRace = useCallback(() => {
         if (!socketRef.current || !roomIdRef.current) return;
         
-        socketRef.current.emit("leave_race", roomIdRef.current);
+        socketRef.current.emit(SocketEvent.LEAVE_RACE, roomIdRef.current);
         roomIdRef.current = "";
     }, []);
 
@@ -283,7 +239,7 @@ export default function useRaceSocket(
         
         if (socketRef.current) {
             if (roomIdRef.current) {
-                socketRef.current.emit("leave_race", roomIdRef.current);
+                socketRef.current.emit(SocketEvent.LEAVE_RACE, roomIdRef.current);
             }
             socketRef.current.disconnect();
             socketRef.current = null;
