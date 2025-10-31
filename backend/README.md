@@ -4,7 +4,28 @@ Socket.IO backend server for Touch Type Pro multiplayer typing races.
 
 ## Setup
 
-1.Install dependencies:
+### Option 1: Docker (Recommended)
+
+The backend includes a `Dockerfile` for containerized deployment:
+
+```bash
+# Build the Docker image
+docker build -t touch-type-pro-backend .
+
+# Run the container
+docker run -p 4000:4000 --env-file .env touch-type-pro-backend
+```
+
+Or use the root `docker-compose.yml` to run all services together (includes PostgreSQL):
+
+```bash
+# From the project root
+docker-compose up -d
+```
+
+### Option 2: Local Development
+
+1. Install dependencies:
 
 ```bash
 npm install
@@ -21,9 +42,22 @@ cp .env.example .env
 ```env
 PORT=4000
 ALLOWED_ORIGINS=http://localhost:3000
+DATABASE_URL=postgresql://user:password@localhost:5432/touchtype
 ```
 
 ## Development
+
+### With Docker
+
+```bash
+# View logs
+docker-compose logs -f backend
+
+# Restart backend service
+docker-compose restart backend
+```
+
+### Local Development
 
 Run the development server:
 

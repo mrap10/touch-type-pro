@@ -35,7 +35,6 @@ services:
       retries: 3
       start_period: 60s
 
-  # Frontend Service
   frontend:
     build:
       context: ./frontend
@@ -64,7 +63,6 @@ services:
       retries: 3
       start_period: 60s
 
-# Networks
 networks:
   touch-type-pro-network:
     driver: bridge

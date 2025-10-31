@@ -62,8 +62,6 @@ Thumbs.db
 .eslintrc*
 eslint.config.mjs
 .prettierrc*
-tsconfig.json
-postcss.config.mjs
 
 # Next.js specific
 .vercel
