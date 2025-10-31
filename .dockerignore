@@ -1,0 +1,40 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+!DOCKER_SETUP.md
+LICENSE
+ARCHITECTURE.md
+BACKEND_REF.md
+todo.txt
+
+# Environment files (will be passed via docker-compose)
+.env
+.env.*
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+logs
+*.log
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.circleci
+
+# Other
+.editorconfig
