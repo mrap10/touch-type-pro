@@ -19,6 +19,7 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',') 
     : ['http://localhost:3000'];
 
+app.set("trust proxy", 1);
 app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
