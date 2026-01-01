@@ -13,22 +13,24 @@ import { apiLimiter } from './middlewares/rateLimiter.middleware';
 dotenv.config();
 
 const app = express();
+
+app.set("trust proxy", 1);
+
 const httpServer = createServer(app);
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS 
     ? process.env.ALLOWED_ORIGINS.split(',') 
     : ['http://localhost:3000'];
 
-app.set("trust proxy", 1);
-app.use(helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" }
-}));
-
 app.use(cors({
     origin: allowedOrigins,
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
 app.use(express.json({ limit: '10mb' }));
@@ -56,7 +58,6 @@ app.use((req, res) => {
     });
 });
 
-// Global error handler (lesson: must be last)
 app.use(errorHandler);
 
 const io = new Server(httpServer, {
