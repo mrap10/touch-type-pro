@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../generated/prisma-client";
 
 export class AppError extends Error {
     statusCode: number;
@@ -26,11 +26,11 @@ export const errorHandler = (
 
     // Handle Prisma errors
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        switch (err.code) {
+        switch ((err as Prisma.PrismaClientKnownRequestError).code) {
             case "P2002":
                 statusCode = 409;
                 message = "A record with this value already exists";
-                details = { field: err.meta?.target };
+                details = { field: (err as Prisma.PrismaClientKnownRequestError).meta?.target };
                 break;
             case "P2025":
                 statusCode = 404;

@@ -4,14 +4,13 @@
   "description": "Socket.IO backend server for Touch Type Pro",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "bun --hot src/index.ts",
+    "dev": "ts-node src/index.ts",
     "build": "tsc",
-    "start": "bun run src/index.ts",
-    "test": "bun test",
-    "prisma:generate": "bun x prisma generate",
-    "prisma:migrate": "bun x prisma migrate dev",
-    "prisma:deploy": "bun x prisma migrate deploy",
-    "prisma:studio": "bun x prisma studio"
+    "start": "ts-node src/index.ts",
+    "prisma:generate": "npx prisma generate",
+    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:deploy": "npx prisma migrate deploy",
+    "prisma:studio": "npx prisma studio"
   },
   "keywords": [],
   "author": "",

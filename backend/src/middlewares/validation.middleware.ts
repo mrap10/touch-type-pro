@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { z, ZodType } from "zod";
+import { z, ZodType, ZodError } from "zod";
 
 export const validate = (schema: ZodType) => {
     return (req: Request, res: Response, next: NextFunction) => {
@@ -12,27 +12,36 @@ export const validate = (schema: ZodType) => {
             const result = schema.parse(dataToValidate) as any;
 
             // schema already nests reqs, so we need to extract them
-            req.body = result.body || req.body;
-            req.query = result.query || req.query;
-            req.params = result.params || req.params;
+            if (result.body) {
+                req.body = result.body;
+            }
+
+            (req as any).validated = {
+                query: result.query ?? req.query,
+                params: result.params ?? req.params,
+            }
             
             next();
-        } catch (error: any) {            
-            const zodIssues = error.issues || error.errors || [];     
-
-            const formattedErrors = zodIssues.map((err: any) => ({
-                field: err.path.join('.'),
-                message: err.message
-            }));
+        } catch (error: unknown) {
+            // Handle Zod errors specifically
+            if (error instanceof ZodError) {
+                const formattedErrors = error.issues.map((err) => ({
+                    field: err.path.join('.'),
+                    message: err.message
+                }));
+                
+                return res.status(400).json({
+                    success: false,
+                    error: "Validation failed",
+                    details: formattedErrors
+                });
+            }
             
-            const errorMessage = formattedErrors.length > 0 
-                ? `Validation failed: ${formattedErrors.map((e: any) => e.message).join(', ')}`
-                : "Validation failed";
-            
+            // Handle unexpected errors
             return res.status(400).json({
                 success: false,
-                error: errorMessage,
-                details: formattedErrors
+                error: "Validation failed",
+                details: [{ field: "unknown", message: error instanceof Error ? error.message : "Unknown validation error" }]
             });
         }
     };
@@ -44,7 +53,9 @@ export const signupSchema = z.object({
             .min(3, "Username must be at least 3 characters")
             .max(30, "Username must not exceed 30 characters")
             .regex(/^[a-zA-Z0-9_-]+$/, "Username can only contain letters, numbers, underscore and hyphen"),
-        email: z.email("Invalid email format").toLowerCase(),
+        email: z.string()
+            .email("Invalid email format")
+            .transform((val) => val.toLowerCase()),
         password: z.string()
             .min(8, "Password must be at least 8 characters")
             .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Password must contain at least one uppercase, one lowercase, and one number")
@@ -53,7 +64,9 @@ export const signupSchema = z.object({
 
 export const signinSchema = z.object({
     body: z.object({
-        email: z.email("Invalid email format").toLowerCase(),
+        email: z.string()
+            .email("Invalid email format")
+            .transform((val) => val.toLowerCase()),
         password: z.string().min(1, "Password is required")
     })
 });
