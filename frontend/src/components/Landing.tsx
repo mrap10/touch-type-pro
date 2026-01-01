@@ -63,7 +63,7 @@ export default function Landing() {
             </main>
 
             <footer className="container mx-auto px-6 py-4 text-center text-sm text-gray-400 dark:text-gray-500">
-                <p>&copy; 2025 TouchTypePro. All Rights Reserved.</p>
+                <p>&copy; {new Date().getFullYear()} TouchTypePro. All Rights Reserved.</p>
             </footer>
         </div>
     )
